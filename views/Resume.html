@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Navbar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+    <link rel="stylesheet" href="./styles/resume.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <!-- Logo -->
+        <a href="/" class="logo">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTM1IiBoZWlnaHQ9IjQ2IiB2aWV3Qm94PSIwIDAgNDIzIDk0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8zOTk4XzY4MDMpIj48cGF0aCBkPSJNMjQ2Ljg4MiA5My4xOThWNTAuODM4SDI2My42ODJDMjY2LjA4MiA1MC44MzggMjY4LjIwMiA1MS4yNTggMjcwLjA0MiA1Mi4wOThDMjcxLjg4MiA1Mi44OTggMjczLjMyMiA1NC4wOTggMjc0LjM2MiA1NS42OThDMjc1LjQwMiA1Ny4yNTggMjc1LjkyMiA1OS4xOTggMjc1LjkyMiA2MS41MThDMjc1LjkyMiA2NC4xNTggMjc1LjE0MiA2Ni4zNTggMjczLjU4MiA2OC4xMThDMjcyLjAyMiA2OS44NzggMjY5LjkwMiA3MS4xMTggMjY3LjIyMiA3MS44MzhMMjY3LjQwMiA3MC4xNThDMjcwLjY4MiA3MC43OTggMjczLjI2MiA3Mi4wNTggMjc1LjE0MiA3My45MzhDMjc3LjA2MiA3NS44MTggMjc4LjAyMiA3OC4yMzggMjc4LjAyMiA4MS4xOThDMjc4LjAyMiA4My43OTggMjc3LjQ0MiA4NS45OTggMjc2LjI4MiA4Ny43OThDMjc1LjEyMiA4OS41OTggMjczLjU0MiA5MC45NTggMjcxLjU0MiA5MS44NzhDMjY5LjU0MiA5Mi43NTggMjY3LjI2MiA5My4xOTggMjY0LjcwMiA5My4xOThIMjQ2Ljg4MlpNMjQ5LjI4MiA3My40NThWNjkuMzE4SDI2My4wMjJDMjY1LjM4MiA2OS4zMTggMjY3LjI2MiA2OC43MzggMjY4LjY2MiA2Ny41NzhDMjcwLjA2MiA2Ni4zNzggMjcwLjc2MiA2NC41NzhDMjcwLjc2MiA2Mi4xNzhDMjcwLjc2MiA1OS44MTggMjcwLjA2MiA1OC4wMzggMjY4LjY2MiA1Ni44MzhDMjY3LjMwMiA1NS41OTggMjY1LjQwMiA1NC45NzggMjYyLjk2MiA1NC45NzhIMjQ4LjM4MkwyNTEuODYyIDUxLjMxOFY5Mi43MThMMjQ4LjM4MiA4OS4wNThIMjY0LjEwMkMyNjYuNzAyIDg5LjA1OCAyNjguODAyIDg4LjM5OCAyNzAuNDAyIDg3LjA3OEMyNzIuMDAyIDg1LjcxOCAyNzIuODAyIDgzLjc3OCAyNzIuODAyIDgxLjI1OEMyNzIuODAyIDc4LjY5OCAyNzIuMDAyIDc2Ljc1OCAyNzAuNDAyIDc1LjQzOEMyNjguODQyIDc0LjExOCAyNjYuNzIyIDczLjQ1OCAyNjQuMDQyIDczLjQ1OEgyNDkuMjgyWiIgZmlsbD0iIzAwM0E5QiI+PC9wYXRoPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTM5LjM0MSA2LjYzMzk1QzEzOC43ODMgNi4wNzU5NSAxMzguMjI0IDUuNzk2OTQgMTM3LjI0NyA1Ljc5Njk0QzEzNi4yNyA1Ljc5Njk0IDEzNS43MTIgNi4wNzU5NSAxMzUuMTU0IDYuNjMzOTVDMTM0LjczNSA3LjMzMDk1IDEzNC40NTYgOC4xNjc5NCAxMzQuNDU2IDkuNDIzOTRWMTcuNzk0OUMxMzMuMzM5IDE2LjY3ODkgMTMyLjIyMyAxNS43MDE5IDEzMS4xMDYgMTUuMTQzOUMxMzAuNDA4IDE0Ljg2NDkgMTI5LjU3MSAxNC41ODYgMTI4LjU5NCAxNC40NDdDMTI4LjAzNiAxNC4zMDcgMTI3LjQ3NyAxNC4zMDcgMTI2LjkxOSAxNC4zMDdDMTIzLjk4OCAxNC4zMDcgMTIxLjYxNiAxNS4yODM5IDExOS44MDEgMTcuMjM2OUMxMTcuOTg3IDE5LjE4OTkgMTE3LjE0OSAyMS45ODA5IDExNy4xNDkgMjUuNjA3OUMxMTcuMTQ5IDI3LjI4MTkgMTE3LjQyOCAyOC44MTcgMTE3Ljg0NyAzMC4zNTJDMTE4LjI2NiAzMS43NDcgMTE4Ljk2NCAzMy4wMDI5IDExOS44MDEgMzQuMTE4OUMxMjAuNjM5IDM1LjIzNDkgMTIxLjc1NSAzNS45MzMgMTIyLjg3MiAzNi42MzBDMTI0LjEyOCAzNy4xODggMTI1LjM4NCAzNy40NjcgMTI2Ljc4IDM3LjQ2N0MxMjcuNDc3IDM3LjQ2NyAxMjguMDM2IDM3LjQ2NjkgMTI4LjU5NCAzNy4zMjc5QzEyOS4wMTMgMzcuMzI3OSAxMjkuMjkyIDM3LjE4OCAxMjkuNzExIDM3LjA0OUMxMzAuNTQ4IDM2Ljc3IDEzMS4zODUgMzYuMzUwOSAxMzIuMjIzIDM1Ljc5MjlDMTMzLjA2IDM1LjIzNDkgMTMzLjc1OCAzNC41MzY5IDEzNC41OTYgMzMuNjk5OVYzNC4yNTc5QzEzNC41OTYgMzUuMzczOSAxMzQuODc1IDM2LjA3MiAxMzUuNDMzIDM2LjYzQzEzNS45OTEgMzcuMTg4IDEzNi42ODkgMzcuNDY3IDEzNy4zODcgMzcuNDY3QzEzOC4yMjQgMzcuNDY3IDEzOC43ODMgMzcuMTg4IDEzOS4zNDEgMzYuNjNDMTM5Ljg5OSAzNi4wNzIgMTQwLjAzOSAzNS4yMzQ5IDE0MC4wMzkgMzQuMTE4OVY5LjAwNDk1QzE0MC4wMzkgOC4wMjg5NSAxMzkuNzYgNy4xOTE5NSAxMzkuMzQxIDYuNjMzOTVaTTEzMy40NzkgMjkuOTMyOUMxMzIuOTIxIDMxLjA0ODkgMTMyLjIyMyAzMS43NDY5IDEzMS4zODUgMzIuMzA0OUMxMzAuNTQ4IDMyLjg2MjkgMTI5LjU3MSAzMy4xNDE5IDEyOC41OTQgMzMuMTQxOUMxMjcuNjE3IDMzLjE0MTkgMTI2LjY0IDMyLjg2MjkgMTI1LjgwMyAzMi4zMDQ5QzEyNC45NjUgMzEuNzQ2OSAxMjQuMjY3IDMwLjkwOTkgMTIzLjcwOSAyOS45MzI5QzEyMy4xNTEgMjguODE2OSAxMjMuMDExIDI3LjU2MDkgMTIzLjAxMSAyNi4wMjY5QzEyMy4wMTEgMjQuNjMxOSAxMjMuMjkgMjMuMjM1OSAxMjMuNzA5IDIyLjI1OTlDMTI0LjEyOCAyMS4xNDM5IDEyNC44MjYgMjAuMzA1OSAxMjUuNjYzIDE5Ljc0NzlDMTI2LjUwMSAxOS4xODk5IDEyNy40NzcgMTguOTEwOSAxMjguNTk0IDE4LjkxMDlIMTI4LjczNEMxMjkuNzExIDE4LjkxMDkgMTMwLjY4OCAxOS4xODk5IDEzMS41MjUgMTkuNzQ3OUMxMzIuMzYzIDIwLjMwNTkgMTMzLjA2MSAyMS4xNDM5IDEzMy42MTkgMjIuMjU5OUMxMzQuMTc3IDIzLjM3NTkgMTM0LjMxNyAyNC42MzE5IDEzNC4zMTcgMjYuMTY1OUMxMzQuMTc3IDI3LjQyMTkgMTMzLjg5OCAyOC44MTY5IDEzMy40NzkgMjkuOTMyOVoiIGZpbGw9IiMwMDNBOTIiPjwvcGF0aD48cGF0aCBkPSJNMTE1LjA1NiAzMC4wNzI5QzExNC42MzcgMjkuNzkzOSAxMTQuMjE4IDI5LjY1NCAxMTMuNjYgMjkuNjU0QzExMy4xMDIgMjkuNjU0IDExMi42ODMgMjkuNzkzOSAxMTIuNDA0IDMwLjA3MjlDMTExLjcwNiAzMC43Njk5IDExMS4wMDggMzEuMzI3OSAxMTAuNTg5IDMxLjYwNjlDMTAwLjE3MSAzMi4wMjU5IDEwOS42MTIgMzIuMzA0OSAxMDkuMDU0IDMyLjcyMzlDMTA4LjQ5NiAzMy4wMDI5IDEwNy45MzggMzMuMjgyIDEwNy4zNzkgMzMuNDIxQzEwNi44MjEgMzMuNTYxIDEwNi4xMjMgMzMuNjk5OSAxMDUuNDI1IDMzLjY5OTlDMTA1LjI4NiAzMy42OTk5IDEwNS4xNDYgMzMuNjk5OSAxMDUuMDA3IDMzLjY5OTlDMTA0LjE2OSAzMy42OTk5IDEwMy4zMzIgMzMuNDIxIDEwMi42MzQgMzMuMDAzQzEwMS43OTYgMzIuNDQ1IDEwMS4wOTkgMzEuNzQ3IDEwMC41NDEgMzAuNzcwQzk5Ljk4MiAyOS43OTQgOTkuNzAzIDI4LjY3NzkgOTkuNzAzIDI3LjI4MTlIMTExLjE0OEMxMTIuNjgzIDI3LjI4MTkgMTEzLjkzOSAyNy4wMDMgMTE0Ljc3NyAyNi41ODVDMTE1LjYxNCAyNi4xNjYgMTE2LjAzMyAyNS4xOSAxMTYuMDMzIDIzLjc5NEMxMTYuMDMzIDIyLjI2IDExNS42MTQgMjAuNzI0OSAxMTQuNzc3IDE5LjE4OTlDMTEzLjkzOSAxNy42NTU5IDExMi42ODMgMTYuNTM4OSAxMTEuMTQ4IDE1LjU2M0MxMDkuNDczIDE0LjU4NTkgMTA3LjUxOSAxNC4xNjc5IDEwNS4yODYgMTQuMTY3OUgxMDUuMTQ2QzEwMy40NzEgMTQuMTY3OSAxMDEuOTM2IDE0LjQ0NyAxMDAuNTQgMTUuMDA1Qzk5LjE0NSAxNS41NjMgOTcuODg4IDE2LjM5OTkgOTYuOTExIDE3LjM3NjlDOTUuOTM0IDE4LjM1MjkgOTUuMjM3IDE5LjYwODkgOTQuNjc4IDIxLjE0MzlDOTQuMTIgMjIuNTM4OSA5My44MzEgMjQuMjEyOSA5My44MzEgMjUuODg2OUM5My44MzEgMjkuNTE0OSA5NC44MTggMzIuMzA1IDk2LjkxMSAzNC4zOThDOTguODY1IDM2LjM1MSAxMDEuNjU3IDM3LjQ2NyAxMDUuMTQ2IDM3LjQ2N0MxMDUuMjg2IDM3LjQ2NyAxMDUuNTY1IDM3LjQ2NyAxMDUuNzA0IDM3LjQ2N0MxMDcuMzc5IDM3LjQ2NyAxMDguNzc1IDM3LjMyNzkgMTEwLjAzMSAzNi45MDlDMTExLjI4NyAzNi40OTA5IDExMi40MDQgMzUuOTMyOSAxMTMuMjQxIDM1LjM3MzlDMTE0LjA3OSAzNC42NzY5IDExNC42MzcgMzQuMTE5IDExNS4wNTYgMzMuNDIxQzExNS40NzQgMzIuNzI0IDExNS42MTQgMzIuMTY1OSAxMTUuNjE0IDMxLjYwNjlDMTE1LjYxNCAzMC45MDk5IDExNS4zMzUgMzAuNDkwOSAxMTUuMDU2IDMwLjA3MjlaTTEwMS4zNzggMTkuNzQ3OUMxMDIuMzU1IDE4Ljc3MTkgMTAzLjQ3MSAxOC4zNTI5IDEwNS4wMDcgMTguMzUyOUMxMDYuNTQyIDE4LjM1MjkgMTA3Ljc5OCAxOC43NzE5IDEwOC42MzYgMTkuNzQ3OUMxMDkuNjEzIDIwLjcyNDkgMTEwLjE3MSAyMi4xMTk5IDExMC4zMSAyNC4wNzI5SDk5LjcwM0M5OS44NDMgMjIuMTE5OSAxMDAuNDAxIDIwLjcyNDkgMTAxLjM3OCAxOS43NDc5WiIgZmlsbD0iIzAwM0E5MiI+PC9wYXRoPjxwYXRoIGQ9Ik05MC4wNzIgMjkuNjU0Qzg5LjUxNCAyOS42NTQgODkuMDk1IDI5Ljc5MzkgODguODE2IDMwLjA3MjlDODguMTE4IDMwLjc2OTkgODcuNDIxIDMxLjMyNzkgODcuMDAyIDMxLjYwNjlDODYuNTgzIDMyLjAyNTkgODYuMDI1IDMyLjMwNDkgODUuNDY3IDMyLjcyMzlDODQuOTA4IDMzLjAwMjkgODQuMzUgMzMuMjgyIDgzLjc5MiAzMy40MjFDODMuMjMzIDMzLjU2MSA4Mi41MzYgMzMuNjk5OSA4MS44MzggMzMuNjk5OUM4MS42OTggMzMuNjk5OSA4MS41NTkgMzMuNjk5OSA4MS40MTkgMzMuNjk5OUM4MC41ODIgMzMuNjk5OSA3OS43NDQgMzMuNDIxIDc5LjA0NiAzMy4wMDNDNzguMjA4IDMyLjQ0NSA3Ny41MTEgMzEuNzQ3IDc2Ljk1MyAzMC43NzBDNzYuMzk0IDI5Ljc5NCA3Ni4xMTUgMjguNjc3OSA3Ni4xMTUgMjcuMjgxOUg4Ny41NkM4OS4wOTUgMjcuMjgxOSA5MC4yMTIgMjcuMDAzIDkxLjE4OSAyNi41ODVDOTIuMDI2IDI2LjE2NiA5Mi40NDUgMjUuMTkgOTIuNDQ1IDIzLjc5NEM5Mi40NDUgMjIuMjYgOTIuMDI2IDIwLjcyNDkgOTEuMTg5IDE5LjE4OTlDOTAuMzUyIDE3LjY1NTkgODkuMDk1IDE2LjUzODkgODcuNTYgMTUuNTYzQzg1Ljg4NSAxNC41ODU5IDgzLjkzMSAxNC4xNjc5IDgxLjY5OCAxNC4xNjc5SDgxLjU1OUM3OS44ODQgMTQuMTY3OSA3OC4zNDggMTQuNDQ3IDc2Ljk1MyAxNS4wMDVDNzUuNTU3IDE1LjU2MyA3NC4zMDEgMTYuMzk5OSA3My4zMjQgMTcuMzc2OUM3Mi4zNDcgMTguMzUyOSA3MS42NSAxOS42MDg5IDcxLjA5MSAyMS4xNDM5QzcwLjUzMiAyMi41Mzg5IDcwLjI1MyAyNC4yMTI5IDcwLjI1MyAyNS44ODY5QzcwLjI1MyAyOS41MTQ5IDcxLjM3IDMyLjMwNSA3My40NjMgMzQuMzk4Qzc1LjQxNyAzNi4zNTEgNzguMjA4IDM3LjQ2NyA4MS41NTkgMzcuNDY3QzgxLjY5OCAzNy40NjcgODEuOTc3IDM3LjQ2NyA4Mi4xMTcgMzcuNDY3QzgzLjc5MiAzNy40NjcgODUuMTg3IDM3LjMyNzkgODYuNDQ0IDM2LjkwOUM4Ny43IDM2LjQ5MDkgODguODE2IDM1LjkzMjkgODkuNjU0IDM1LjM3MzlDOTAuNDkxIDM0LjY3NjkgOTEuMDQ5IDM0LjExOSA5MS40NjggMzMuNDIxQzkxLjg4NyAzMi43MjQgOTIuMDI2IDMyLjE2NTkgOTIuMDI2IDMxLjYwNjlDOTIuMDI2IDMxLjA0ODkgOTEuODg3IDMwLjYzMSA5MS40NjggMzAuMjEyQzkxLjE4OSAyOS43OTQgOTAuNjMxIDI5LjY1NCA5MC4wNzIgMjkuNjU0WiIgZmlsbD0iIzAwM0E5MiI+PC9wYXRoPjxwYXRoIGQ9Ik03Ny45MyAxOS43NDc5Qzc4LjkwNyAxOC43NzE5IDgwLjAyMyAxOC4zNTI5IDgxLjU1OSAxOC4zNTI5QzgzLjA5NCAxOC4zNTI5IDg0LjM1IDE4Ljc3MTkgODUuMTg4IDE5Ljc0NzlDODYuMTY1IDIwLjcyNDkgODYuNzIzIDIyLjExOTkgODYuODYzIDI0LjA3MjlINzYuMjU1Qzc2LjM5NSAyMi4xMTk5IDc2Ljk1MyAyMC43MjQ5IDc3LjkzIDE5Ljc0NzlaIiBmaWxsPSIjMDAzQTkyIj48L3BhdGg+PHBhdGggZD0iTTEyLjYxMDQgMzMuNjk5OVYyMC4xNjdDMTMuMDI5MiAyMC4xNjcgMTMuNDQ3OSAyMC4xNjcgMTMuNzI3IDIwLjE2N0MxNS42ODEgMjAuMTY3IDE3LjM1NTkgMTkuNjA4OSAxOC44OTExIDE4Ljc3MTlWMzMuNjk5OUMxOC44OTExIDM0Ljk1NTkgMTguNjEyIDM1LjkzMjkgMTguMDUzNyAzNi40OTA5QzE3LjQ5NTQgMzcuMDQ4OSAxNi42NTggMzcuNDY3IDE1LjY4MSAzNy40NjdDMTQuNzA0IDM3LjQ2NyAxNC4wMDYyIDM3LjE4NzkgMTMuNDQ3OSAzNi40OTA5QzEyLjg4OTYgMzUuNzkyOSAxMi42MTA0IDM0Ljk1NTkgMTIuNjEwNCAzMy42OTk5WiIgZmlsbD0iIzAwM0E5MiI+PC9wYXRoPjxwYXRoIGQ9Ik02Ny43NDEgNi42MzM5NUM2Ny4xODMgNi4wNzU5NSA2Ni42MjQgNS43OTY5NCA2NS42NDcgNS43OTY5NEM2NC44MSA1Ljc5Njk0IDY0LjExMiA2LjA3NTk1IDYzLjU1NCA2LjYzMzk1QzYyLjk5NiA3LjE5MTk1IDYyLjg1NiA4LjE2Nzk0IDYyLjg1NiA5LjI4Mzk0VjE3LjY1NkM2MS43MzkgMTYuNTM5IDYwLjYyMyAxNS41NjMgNTkuNTA2IDE1LjAwNUM1OC44MDggMTQuNzI2IDU3Ljk3MSAxNC40NDcgNTYuOTk0IDE0LjMwN0M1Ni40MzYgMTQuMTY4IDU1Ljg3NyAxNC4xNjc5IDU1LjMxOSAxNC4xNjc5QzUyLjM4OCAxNC4xNjc5IDUwLjAxNiAxNS4xNDQgNDguMjAxIDE3LjA5OEM0Ni4zODcgMTkuMDUxIDQ1LjU0OTIgMjEuODQxOSA0NS41NDkyIDI1LjQ2ODlDNDUuNTQ5MiAyNy4xNDI5IDQ1LjgyODQgMjguNjc4IDQ2LjI0NyAzMC4yMTJDNDYuNjY2IDMxLjYwNyA0Ny4zNjQgMzIuODYyOSA0OC4yMDEgMzMuOTc4OUM0OS4wMzkgMzUuMDk0OSA1MC4xNTUgMzUuNzkyOSA1MS4yNzIgMzYuNDkwOUM1Mi41MjggMzcuMDQ4OSA1My43ODQgMzcuMzI3OSA1NS4xOCAzNy4zMjc5QzU1LjczOCAzNy4zMjc5IDU2LjQzNiAzNy4zMjc5IDU2Ljk5NCAzNy4xODc5QzU3LjQxMyAzNy4xODc5IDU3LjY5MiAzNy4wNDg5IDU4LjExMSAzNi45MDlDNTguOTQ4IDM2LjYyOTkgNTkuNzg1IDM2LjIxMDkgNjAuNjIzIDM1LjY1MzlDNjEuNDYgMzUuMDk0OSA2Mi4xNTggMzQuMzk4IDYyLjk5NiAzMy41NjFWMzQuMTE4OUM2Mi45OTYgMzUuMjM0OSA2My4yNzUgMzUuOTMyOSA2My44MzMgMzYuNDkwOUM2NC4zOTEgMzcuMDQ4OSA2NS4wODkgMzcuMzI3OSA2NS43ODcgMzcuMzI3OUM2Ni42MjQgMzcuMzI3OSA2Ny4xODMgMzcuMDQ4OSA2Ny43NDEgMzYuNDkwOUM2OC4yOTkgMzUuOTMyOSA2OC40MzkgMzUuMDk0OSA2OC40MzkgMzMuOTc4OVY4Ljg2NTk0QzY4LjQzOSA4LjAyODk0IDY4LjE2IDcuMTkxOTUgNjcuNzQxIDYuNjMzOTVaTTYxLjg3OSAyOS45MzI5QzYxLjMyMSAzMS4wNDg5IDYwLjYyMyAzMS43NDY5IDU5Ljc4NSAzMi4zMDQ5QzU4Ljk0OCAzMi44NjI5IDU3Ljk3MSAzMy4xNDE5IDU2Ljk5NCAzMy4xNDE5QzU2LjAxNyAzMy4xNDE5IDU1LjA0IDMyLjg2MjkgNTQuMjAzIDMyLjMwNDlDNTMuMzY1IDMxLjc0NjkgNTIuNjY3IDMwLjkwOTkgNTIuMTA5IDI5LjkzMjlDNTEuNTUxIDI4LjgxNjkgNTEuNDExIDI3LjU2MDkgNTEuNDExIDI2LjAyNjlDNTEuNDExIDI0LjYzMTkgNTEuNjkgMjMuMjM1OSA1Mi4xMDkgMjIuMjU5OUM1Mi41MjggMjEuMTQzOSA1My4yMjYgMjAuMzA1OSA1NC4wNjMgMTkuNzQ3OUM1NC45MDEgMTkuMTg5OSA1NS44NzcgMTguOTEwOSA1Ni45OTQgMTguOTEwOUg1Ny4xMzRDNTguMTExIDE4LjkxMDkgNTkuMDg4IDE5LjE4OTkgNTkuOTI1IDE5Ljc0NzlDNjAuNzYzIDIwLjMwNTkgNjEuNDYxIDIxLjE0MzkgNjIuMDE5IDIyLjI1OTlDNjIuNTc3IDIzLjM3NTkgNjIuNzE3IDI0LjYzMTkgNjIuNzE3IDI2LjE2NTlDNjIuNTc3IDI3LjQyMTkgNjIuMjk4IDI4LjgxNjkgNjEuODc5IDI5LjkzMjlaIiBmaWxsPSIjMDAzQTkyIj48L3BhdGg+PHBhdGggZD0iTTI4LjM4MiAxNy4zNzY5VjE4LjA3NEMyOS4zNTkgMTYuNjc5IDMwLjQ3NTUgMTUuODQxOSAzMS43MzE3IDE1LjE0MzlDMzIuOTg3OCAxNC41ODU5IDM0LjM4MzUgMTQuMTY3OSAzNS45MTg4IDE0LjE2NzlDMzcuNDU0MSAxNC4xNjc5IDM4Ljg0OTggMTQuNDQ2OSA0MC4xMDYgMTUuMTQzOUM0MS4zNjIxIDE1Ljg0MTkgNDIuMTk1NSAxNi42Nzg5IDQyLjc1NzggMTcuOTM0OUM0My4xNzY1IDE4LjYzMTkgNDMuNDU3NyAxOS4zMyA0My40NTc3IDIwLjE2N0M0My43MzY4IDIxLjE0NCA0My43MzY4IDIyLjEyIDQzLjczNjggMjMuMzc2VjMzLjk3OEM0My43MzY4IDM1LjA5NCA0My40NTc3IDM1LjkzMjkgNDIuODk3NCAzNi40OTA5QzQyLjMzOTEgMzcuMDQ4OSA0MS42NDEyIDM3LjMyNzkgNDAuODAzOCAzNy4zMjc5QzM5Ljk2NjQgMzcuMzI3OSAzOS4yNjg1IDM3LjA0ODkgMzguNzEwMiAzNi40OTA5QzM4LjE1MiAzNS45MzI5IDM3Ljg3MjggMzUuMDk0IDM3Ljg3MjggMzMuOTc4VjI0LjQ5MkMzNy44NzI4IDIyLjY3OCAzNy41OTM3IDIxLjE0NCAzNy4wMzU0IDIwLjE2N0MzNi40NzcxIDE5LjE5IDM1LjM2MDUgMTguNjMyIDMzLjgyNTMgMTguNjMyQzMyLjg0ODMgMTguNjMyIDMxLjg3MTMgMTguOTEwOSAzMS4wMzM4IDE5LjQ2ODlDMzAuMTk2NCAyMC4wMjY5IDI5LjQ5ODUgMjAuODY1IDI5LjA3OTggMjEuOTgwOUMyOC44MDA3IDIyLjgxNzkgMjguNjYxMSAyNC4zNTI5IDI4LjY2MTEgMjYuNzIzOVYzMy44Mzk5QzI4LjY2MTEgMzQuOTU1OSAyOC4zODIgMzUuNzkyOSAyNy44MjM3IDM2LjQ5MDlDMjcuMjY1NCAzNy4wNDg5IDI2LjU2NzUgMzcuMzI3OSAyNS43MzAxIDM3LjMyNzlDMjQuODkyNyAzNy4zMjc5IDI0LjE5NDggMzcuMDQ4OSAyMy42MzY1IDM2LjQ5MDlDMjMuMDc4MyAzNS45MzI5IDIyLjc5OTEgMzUuMDk0IDIyLjc5OTEgMzMuOTc4VjE3LjUxNkMyMi43OTkxIDE2LjQgMjMuMDc4MyAxNS41NjI5IDIzLjQ5NyAxNS4xNDM5QzIzLjkxNTcgMTQuNTg1OSAyNC42MTM2IDE0LjMwNyAyNS4xNzE5IDE0LjMwN0MyNS43MzAyIDE0LjMwNyAyNi4xNDg5IDE0LjQ0NjkgMjYuNTY3NiAxNC43MjY5QzI3LjI2NTUgMTUuMDA1OSAyNy41NDQ3IDE1LjI4NDkgMjcuODIzNyAxNS44NDI5QzI4LjI0MjQgMTYuMjYxOSAyOC4zODIgMTYuODE5OSAyOC4zODIgMTcuMzc2OVoiIGZpbGw9IiMwMDNBOTIiPjwvcGF0aD48cGF0aCBkPSJNMTIuNzUgMS4wNTI5NEMxNi42NTggLTAuMzQyMDU2IDIxLjEyNDMgLTAuMjAzMDU1IDI0LjYxMzYgMi41ODc5NEMyNS4xNzE5IDMuMTQ1OTQgMjYuMDE5NSAzLjg0Mjk0IDI2LjI4ODQgNC42Nzk5NEMyNi41Njc2IDUuNzk2OTQgMjUuMDMyMyA0LjU0MDk1IDI0Ljg5MjcgNC40MDA5NUMyMy43NzYxIDMuNzAzOTUgMjIuNjU5NiAzLjE0NTk1IDIxLjQwMzQgMi43MjY5NUMxNC43MDQgMC43NzM5NTIgOC40MjMyNyA0LjQwMDk0IDQuNTE1MjcgOS45ODE5NEMyLjg0MDQ3IDEyLjQ5MjkgMS44NjM0OCAxNS4wMDQ5IDAuODg2NDc1IDE3LjkzNDlDMC43NDY4NzUgMTguMjEzOSAwLjc0Njg3NCAxOC42MzE5IDAuNjA3Mjc1IDE4LjkxMDlDMC4zMjgxNzUgMTkuMzI5OSAwLjQ2Nzc3NSAxOC4wNzQgMC40Njc3NzUgMTguMDc0QzAuNjA3Mjc1IDE2Ljk1OCAwLjg4NjQ3NSAxNS42OTg5IDEuMTY1NTcgMTQuNTg1OUMyLjk3OTk3IDguNDQ2OTUgNy4wMjc1NyAzLjQyNDk0IDEyLjc1IDEuMDUyOTRaIiBmaWxsPSIjMDAzQTkyIj48L3BhdGg+PHBhdGggZD0iTTIwLjI4NjkgMTIuMDc0OUMxOS45ODc5IDE0LjcyNDkgMTcuODkzMyAxNi44MTg5IDE1LjI0MTQgMTYuODE4OUMxMi41ODk2IDE2LjgxODkgMTAuNDk0OSAxNC43MjQ5IDEwLjQ5NDkgMTIuMDc0OUMxMC40OTQ5IDkuNDI0OTQgMTIuNzI5MiA3LjMzMDk0IDE1LjM4MSA3LjMzMDk0QzE4LjAzMjkgNy4zMzA5NCAxOS45ODc5IDkuNDI0OTQgMTkuOTg3OSAxMi4wNzQ5WiIgZmlsbD0iIzAwM0E5MiI+PC9wYXRoPjwvZz48ZGVmcz48Y2xpcFBhdGggaWQ9ImNsaXAwXzM5OThfNjgwMyI+PHJlY3Qgd2lkdGg9IjQyMyIgaGVpZ2h0PSI5NCIgZmlsbD0id2hpdGUiPjwvcmVjdD48L2NsaXBQYXRoPjwvZGVmcz48L3N2Zz4=" alt="Company Logo">
+        </a>
+        
+        <!-- Desktop Navigation -->
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a href="./Resume" class="nav-link">Home</a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="nav-link">Resume <i class="fas fa-chevron-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-item">
+                        <a href="#" class="dropdown-link">Resume Samples</a>
+                    </li>
+                    <li class="dropdown-item">
+                        <a href="#" class="dropdown-link">Resume Builder</a>
+                    </li>
+                    <li class="dropdown-item">
+                        <a href="#" class="dropdown-link">Resume Templates</a>
+                    </li>
+                    <li class="dropdown-item">
+                        <a href="#" class="dropdown-link">Resume Writing Guide</a>
+                    </li>
+                </ul>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="nav-link">Cover Letter <i class="fas fa-chevron-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-item">
+                        <a href="#" class="dropdown-link">Cover Letter Samples</a>
+                    </li>
+                    <li class="dropdown-item">
+                        <a href="#" class="dropdown-link">Cover Letter Builder</a>
+                    </li>
+                    <li class="dropdown-item">
+                        <a href="#" class="dropdown-link">Cover Letter Templates</a>
+                    </li>
+                    <li class="dropdown-item">
+                        <a href="#" class="dropdown-link">Cover Letter Writing Guide</a>
+                    </li>
+                </ul>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="nav-link">Career Advice</a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="nav-link">About Us</a>
+            </li>
+            
+            <div class="auth-buttons">
+                <a href="./Login" class="btn btn-outline">Sign In</a>
+                <a href="./Signup" class="btn btn-solid">Sign Up</a>
+            </div>
+        </ul>
+        
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+    
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav">
+        <div class="mobile-nav-header">
+            <a href="/" class="logo">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTM1IiBoZWlnaHQ9IjQ2IiB2aWV3Qm94PSIwIDAgNDIzIDk0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8zOTk4XzY4MDMpIj48cGF0aCBkPSJNMjQ2Ljg4MiA5My4xOThWNTAuODM4SDI2My42ODJDMjY2LjA4MiA1MC44MzggMjY4LjIwMiA1MS4yNTggMjcwLjA0MiA1Mi4wOThDMjcxLjg4MiA1Mi44OTggMjczLjMyMiA1NC4wOTggMjc0LjM2MiA1NS42OThDMjc1LjQwMiA1Ny4yNTggMjc1LjkyMiA1OS4xOTggMjc1LjkyMiA2MS41MThDMjc1LjkyMiA2NC4xNTggMjc1LjE0MiA2Ni4zNTggMjczLjU4MiA2OC4xMThDMjcyLjAyMiA2OS44NzggMjY5LjkwMiA3MS4xMTggMjY3LjIyMiA3MS44MzhMMjY3LjQwMiA3MC4xNThDMjcwLjY4MiA3MC43OTggMjczLjI2MiA3Mi4wNTggMjc1LjE0MiA3My45MzhDMjc3LjA2MiA3NS44MTggMjc4LjAyMiA3OC4yMzggMjc4LjAyMiA4MS4xOThDMjc4LjAyMiA4My43OTggMjc3LjQ0MiA4NS45OTggMjc2LjI4MiA4Ny43OThDMjc1LjEyMiA4OS41OTggMjczLjU0MiA5MC45NTggMjcxLjU0MiA5MS44NzhDMjY5LjU0MiA5Mi43NTggMjY3LjI2MiA5My4xOTggMjY0LjcwMiA5My4xOThIMjQ2Ljg4MlpNMjQ5LjI4MiA3My40NThWNjkuMzE4SDI2My4wMjJDMjY1LjM4MiA2OS4zMTggMjY3LjI2MiA2OC43MzggMjY4LjY2MiA2Ny41NzhDMjcwLjA2MiA2Ni4zNzggMjcwLjc2MiA2NC41NzhDMjcwLjc2MiA2Mi4xNzhDMjcwLjc2MiA1OS44MTggMjcwLjA2MiA1OC4wMzggMjY4LjY2MiA1Ni44MzhDMjY3LjMwMiA1NS41OTggMjY1LjQwMiA1NC45NzggMjYyLjk2MiA1NC45NzhIMjQ4LjM4MkwyNTEuODYyIDUxLjMxOFY5Mi43MThMMjQ4LjM4MiA4OS4wNThIMjY0LjEwMkMyNjYuNzAyIDg5LjA1OCAyNjguODAyIDg4LjM5OCAyNzAuNDAyIDg3LjA3OEMyNzIuMDAyIDg1LjcxOCAyNzIuODAyIDgzLjc3OCAyNzIuODAyIDgxLjI1OEMyNzIuODAyIDc4LjY5OCAyNzIuMDAyIDc2Ljc1OCAyNzAuNDAyIDc1LjQzOEMyNjguODQyIDc0LjExOCAyNjYuNzIyIDczLjQ1OCAyNjQuMDQyIDczLjQ1OEgyNDkuMjgyWiIgZmlsbD0iIzAwM0E5QiI+PC9wYXRoPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTM5LjM0MSA2LjYzMzk1QzEzOC43ODMgNi4wNzU5NSAxMzguMjI0IDUuNzk2OTQgMTM3LjI0NyA1Ljc5Njk0QzEzNi4yNyA1Ljc5Njk0IDEzNS43MTIgNi4wNzU5NSAxMzUuMTU0IDYuNjMzOTVDMTM0LjczNSA3LjMzMDk1IDEzNC40NTYgOC4xNjc5NCAxMzQuNDU2IDkuNDIzOTRWMTcuNzk0OUMxMzMuMzM5IDE2LjY3ODkgMTMyLjIyMyAxNS43MDE5IDEzMS4xMDYgMTUuMTQzOUMxMzAuNDA4IDE0Ljg2NDkgMTI5LjU3MSAxNC41ODYgMTI4LjU5NCAxNC40NDdDMTI4LjAzNiAxNC4zMDcgMTI3LjQ3NyAxNC4zMDcgMTI2LjkxOSAxNC4zMDdDMTIzLjk4OCAxNC4zMDcgMTIxLjYxNiAxNS4yODM5IDExOS44MDEgMTcuMjM2OUMxMTcuOTg3IDE5LjE4OTkgMTE3LjE0OSAyMS45ODA5IDExNy4xNDkgMjUuNjA3OUMxMTcuMTQ5IDI3LjI4MTkgMTE3LjQyOCAyOC44MTcgMTE3Ljg0NyAzMC4zNTJDMTE4LjI2NiAzMS43NDcgMTE4Ljk2NCAzMy4wMDI5IDExOS44MDEgMzQuMTE4OUMxMjAuNjM5IDM1LjIzNDkgMTIxLjc1NSAzNS45MzMgMTIyLjg3MiAzNi42MzBDMTI0LjEyOCAzNy4xODggMTI1LjM4NCAzNy40NjcgMTI2Ljc4IDM3LjQ2N0MxMjcuNDc3IDM3LjQ2NyAxMjguMDM2IDM3LjQ2NjkgMTI4LjU5NCAzNy4zMjc5QzEyOS4wMTMgMzcuMzI3OSAxMjkuMjkyIDM3LjE4OCAxMjkuNzExIDM3LjA0OUMxMzAuNTQ4IDM2Ljc3IDEzMS4zODUgMzYuMzUwOSAxMzIuMjIzIDM1Ljc5MjlDMTMzLjA2IDM1LjIzNDkgMTMzLjc1OCAzNC41MzY5IDEzNC41OTYgMzMuNjk5OVYzNC4yNTc5QzEzNC41OTYgMzUuMzczOSAxMzQuODc1IDM2LjA3MiAxMzUuNDMzIDM2LjYzQzEzNS45OTEgMzcuMTg4IDEzNi42ODkgMzcuNDY3IDEzNy4zODcgMzcuNDY3QzEzOC4yMjQgMzcuNDY3IDEzOC43ODMgMzcuMTg4IDEzOS4zNDEgMzYuNjNDMTM5Ljg5OSAzNi4wNzIgMTQwLjAzOSAzNS4yMzQ5IDE0MC4wMzkgMzQuMTE4OVY5LjAwNDk1QzE0MC4wMzkgOC4wMjg5NSAxMzkuNzYgNy4xOTE5NSAxMzkuMzQxIDYuNjMzOTVaTTEzMy40NzkgMjkuOTMyOUMxMzIuOTIxIDMxLjA0ODkgMTMyLjIyMyAzMS43NDY5IDEzMS4zODUgMzIuMzA0OUMxMzAuNTQ4IDMyLjg2MjkgMTI5LjU3MSAzMy4xNDE5IDEyOC41OTQgMzMuMTQxOUMxMjcuNjE3IDMzLjE0MTkgMTI2LjY0IDMyLjg2MjkgMTI1LjgwMyAzMi4zMDQ5QzEyNC45NjUgMzEuNzQ2OSAxMjQuMjY3IDMwLjkwOTkgMTIzLjcwOSAyOS45MzI5QzEyMy4xNTEgMjguODE2OSAxMjMuMDExIDI3LjU2MDkgMTIzLjAxMSAyNi4wMjY5QzEyMy4wMTEgMjQuNjMxOSAxMjMuMjkgMjMuMjM1OSAxMjMuNzA5IDIyLjI1OTlDMTI0LjEyOCAyMS4xNDM5IDEyNC44MjYgMjAuMzA1OSAxMjUuNjYzIDE5Ljc0NzlDMTI2LjUwMSAxOS4xODk5IDEyNy40NzcgMTguOTEwOSAxMjguNTk0IDE4LjkxMDlIMTI4LjczNEMxMjkuNzExIDE4LjkxMDkgMTMwLjY4OCAxOS4xODk5IDEzMS41MjUgMTkuNzQ3OUMxMzIuMzYzIDIwLjMwNTkgMTMzLjA2MSAyMS4xNDM5IDEzMy42MTkgMjIuMjU5OUMxMzQuMTc3IDIzLjM3NTkgMTM0LjMxNyAyNC42MzE5IDEzNC4zMTcgMjYuMTY1OUMxMzQuMTc3IDI3LjQyMTkgMTMzLjg5OCAyOC44MTY5IDEzMy40NzkgMjkuOTMyOVoiIGZpbGw9IiMwMDNBOTIiPjwvcGF0aD48cGF0aCBkPSJNMTE1LjA1NiAzMC4wNzI5QzExNC42MzcgMjkuNzkzOSAxMTQuMjE4IDI5LjY1NCAxMTMuNjYgMjkuNjU0QzExMy4xMDIgMjkuNjU0IDExMi42ODMgMjkuNzkzOSAxMTIuNDA0IDMwLjA3MjlDMTExLjcwNiAzMC43Njk5IDExMS4wMDggMzEuMzI3OSAxMTAuNTg5IDMxLjYwNjlDMTAwLjE3MSAzMi4wMjU5IDEwOS42MTIgMzIuMzA0OSAxMDkuMDU0IDMyLjcyMzlDMTA4LjQ5NiAzMy4wMDI5IDEwNy45MzggMzMuMjgyIDEwNy4zNzkgMzMuNDIxQzEwNi44MjEgMzMuNTYxIDEwNi4xMjMgMzMuNjk5OSAxMDUuNDI1IDMzLjY5OTlDMTA1LjI4NiAzMy42OTk5IDEwNS4xNDYgMzMuNjk5OSAxMDUuMDA3IDMzLjY5OTlDMTA0LjE2OSAzMy42OTk5IDEwMy4zMzIgMzMuNDIxIDEwMi42MzQgMzMuMDAzQzEwMS43OTYgMzIuNDQ1IDEwMS4wOTkgMzEuNzQ3IDEwMC41NDEgMzAuNzcwQzk5Ljk4MiAyOS43OTQgOTkuNzAzIDI4LjY3NzkgOTkuNzAzIDI3LjI4MTlIMTExLjE0OEMxMTIuNjgzIDI3LjI4MTkgMTEzLjkzOSAyNy4wMDMgMTE0Ljc3NyAyNi41ODVDMTE1LjYxNCAyNi4xNjYgMTE2LjAzMyAyNS4xOSAxMTYuMDMzIDIzLjc5NEMxMTYuMDMzIDIyLjI2IDExNS42MTQgMjAuNzI0OSAxMTQuNzc3IDE5LjE4OTlDMTEzLjkzOSAxNy42NTU5IDExMi42ODMgMTYuNTM4OSAxMTEuMTQ4IDE1LjU2M0MxMDkuNDczIDE0LjU4NTkgMTA3LjUxOSAxNC4xNjc5IDEwNS4yODYgMTQuMTY3OUgxMDUuMTQ2QzEwMy40NzEgMTQuMTY3OSAxMDEuOTM2IDE0LjQ0NyAxMDAuNTQgMTUuMDA1Qzk5LjE0NSAxNS41NjMgOTcuODg4IDE2LjM5OTkgOTYuOTExIDE3LjM3NjlDOTUuOTM0IDE4LjM1MjkgOTUuMjM3IDE5LjYwODkgOTQuNjc4IDIxLjE0MzlDOTQuMTIgMjIuNTM4OSA5My44MzEgMjQuMjEyOSA5My44MzEgMjUuODg2OUM5My44MzEgMjkuNTE0OSA5NC44MTggMzIuMzA1IDk2LjkxMSAzNC4zOThDOTguODY1IDM2LjM1MSAxMDEuNjU3IDM3LjQ2NyAxMDUuMTQ2IDM3LjQ2N0MxMDUuMjg2IDM3LjQ2NyAxMDUuNTY1IDM3LjQ2NyAxMDUuNzA0IDM3LjQ2N0MxMDcuMzc5IDM3LjQ2NyAxMDguNzc1IDM3LjMyNzkgMTEwLjAzMSAzNi45MDlDMTExLjI4NyAzNi40OTA5IDExMi40MDQgMzUuOTMyOSAxMTMuMjQxIDM1LjM3MzlDMTE0LjA3OSAzNC42NzY5IDExNC42MzcgMzQuMTE5IDExNS4wNTYgMzMuNDIxQzExNS40NzQgMzIuNzI0IDExNS42MTQgMzIuMTY1OSAxMTUuNjE0IDMxLjYwNjlDMTE1LjYxNCAzMC45MDk5IDExNS4zMzUgMzAuNDkwOSAxMTUuMDU2IDMwLjA3MjlaTTEwMS4zNzggMTkuNzQ3OUMxMDIuMzU1IDE4Ljc3MTkgMTAzLjQ3MSAxOC4zNTI5IDEwNS4wMDcgMTguMzUyOUMxMDYuNTQyIDE4LjMyMjkgMTA3Ljc5OCAxOC43NzE5IDEwOC42MzYgMTkuNzQ3OUMxMDkuNjEzIDIwLjcyNDkgMTEwLjE3MSAyMi4xMTk5IDExMC4zMSAyNC4wNzI5SDk5LjcwM0M5OS44NDMgMjIuMTE5OSAxMDAuNDAxIDIwLjcyNDkgMTAxLjM3OCAxOS43NDc5WiIgZmlsbD0iIzAwM0E5MiI+PC9wYXRoPjxwYXRoIGQ9IjkxLjA0OSAzMy40MjFDOTEuNDY4IDMyLjcyNCA5MS42MDcgMzIuMTY1OSA5MS42MDcgMzEuNjA2OUM5MS42MDcgMzEuMDQ4OSA5MS40NjggMzAuNjMxIDkxLjA0OSAzMC4yMTJDOTAuNzcgMjkuNzk0IDkwLjIxMiAyOS42NTQgODkuNjUzIDI5LjY1NEM4OS4wOTUgMjkuNjU0IDg4LjY3NiAyOS43OTM5IDg4LjM5NyAzMC4wNzI5Qzg3LjY5OSAzMC43Njk5IDg3LjAwMSAzMS4zMjc5IDg2LjU4MyAzMS42MDY5Qzc2LjE2NSAzMi4wMjU5IDg1LjYwNiAzMi4zMDQ5IDg1LjA0OCAzMi43MjM5Qzg0LjQ4OSAzMy4wMDI5IDgzLjkzMSAzMy4yODIgODMuMzcyIDMzLjQyMUM4Mi44MTQgMzMuNTYxIDgyLjExNiAzMy42OTk5IDgxLjQxOCAzMy42OTk5QzgxLjI3OSAzMy42OTk5IDgxLjEzOSAzMy42OTk5IDgxLjAwMyAzMy42OTk5QzgwLjE2NSAzMy42OTk5IDc5LjMyOCAzMy40MjEgNzguNjMgMzMuMDAzQzc3Ljc5MiAzMi40NDUgNzcuMDk1IDMxLjc0NyA3Ni41MzcgMzAuNzcwQzc1Ljk3OCAyOS43OTQgNzUuNjk5IDI4LjY3NzkgNzUuNjk5IDI3LjI4MTlIODcuMTQ0Qzg4LjY3OSAyNy4yODE5IDg5LjkzNSAyNy4wMDMgOTAuNzcyIDI2LjU4NUM5MS42MDkgMjYuMTY2IDkyLjAyOCAyNS4xOSA5Mi4wMjggMjMuNzk0QzkyLjAyOCAyMi4yNiA5MS42MDkgMjAuNzI0OSA5MC43NzIgMTkuMTg5OUM4OS45MzUgMTcuNjU1OSA4OC42NzkgMTYuNTM4OSA4Ny4xNDQgMTUuNTYzQzg1LjQ2OSAxNC41ODU5IDgzLjUxNSAxNC4xNjc5IDgxLjI4MiAxNC4xNjc5SDgxLjE0M0M3OS40NjggMTQuMTY3OSA3Ny45MzIgMTQuNDQ3IDc2LjUzNyAxNS4wMDVDNzUuMTQxIDE1LjU2MyA3My44ODUgMTYuMzk5OSA3Mi45MDggMTcuMzc2OUM3MS45MzEgMTguMzUyOSA3MS4yMzQgMTkuNjA4OSA3MC42NzUgMjEuMTQzOUM3MC4xMTcgMjIuNTM4OSA2OS44MzggMjQuMjEyOSA2OS44MzggMjUuODg2OUM2OS44MzggMjkuNTE0OSA3MC45MjUgMzIuMzA1IDczLjAxOCAzNC4zOThDNzQuOTcyIDM2LjM1MSA3Ny43NjMgMzcuNDY3IDgxLjE0MyAzNy40NjdDODEuMjgyIDM3LjQ2NyA4MS41NjEgMzcuNDY3IDgxLjcwMSAzNy40NjdDODMuMzc2IDM3LjQ2NyA4NC43NzEgMzcuMzI3OSA4Ni4wMjggMzYuOTA5Qzg3LjI4NCAzNi40OTA5IDg4LjQwMSAzNS45MzI5IDg5LjIzOCAzNS4zNzM5QzkwLjA3NiAzNC42NzY5IDkwLjYzNCAzNC4xMTkgOTEuMDQ5IDMzLjQyMVoiIGZpbGw9IiMwMDNBOTIiPjwvcGF0aD48cGF0aCBkPSJNNzcuOTMgMTkuNzQ3OUM3OC45MDcgMTguNzcxOSA4MC4wMjMgMTguMzUyOSA4MS41NTkgMTguMzUyOUM4My4wOTQgMTguMzUyOSA4NC4zNSAxOC43NzE5IDg1LjE4OCAxOS43NDc5Qzg2LjE2NSAyMC43MjQ5IDg2LjcyMyAyMi4xMTk5IDg2Ljg2MyAyNC4wNzI5SDc2LjI1NUM3Ni4zOTUgMjIuMTE5OSA3Ni45NTMgMjAuNzI0OSA3Ny45MyAxOS43NDc5WiIgZmlsbD0iIzAwM0E5MiI+PC9wYXRoPjxwYXRoIGQ9Ik0xMi42MTA0IDMzLjY5OTlWMjAuMTY3QzEzLjAyOTIgMjAuMTY3IDEzLjQ0NzkgMjAuMTY3IDEzLjcyNyAyMC4xNjdDMTUuNjgxIDIwLjE2NyAxNy4zNTU5IDE5LjYwODkgMTguODkxMSAxOC43NzE5VjMzLjY5OTlDMTguODkxMSAzNC45NTU5IDE4LjYxMiAzNS45MzI5IDE4LjA1MzcgMzYuNDkwOUMxNy40OTU0IDM3LjA0ODkgMTYuNjU4IDM3LjQ2NyAxNS42ODEgMzcuNDY3QzE0LjcwNCAzNy40NjcgMTQuMDA2MiAzNy4xODc5IDEzLjQ0NzkgMzYuNDkwOUMxMi44ODk2IDM1Ljc5MjkgMTIuNjEwNCAzNC45NTU5IDEyLjYxMDQgMzMuNjk5OVoiIGZpbGw9IiMwMDNBOTIiPjwvcGF0aD48cGF0aCBkPSJNNjcuNzQxIDYuNjMzOTVDNjcuMTgzIDYuMDc1OTUgNjYuNjI0IDUuNzk2OTQgNjUuNjQ3IDUuNzk2OTRDNjQuODEgNS43OTY5NCA2NC4xMTIgNi4wNzU5NSA2My41NTQgNi42MzM5NUM2Mi45OTYgNy4xOTE5NSA2Mi44NTYgOC4xNjc5NCA2Mi44NTYgOS4yODM5NFYxNy42NTZDNjEuNzM5IDE2LjUzOSA2MC42MjMgMTUuNTYzIDU5LjUwNiAxNS4wMDVDNTguODA4IDE0LjcyNiA1Ny45NzEgMTQuNDQ3IDU2Ljk5NCAxNC4zMDdDNTYuNDM2IDE0LjE2OCA1NS44NzcgMTQuMTY3OSA1NS4zMTkgMTQuMTY3OUM1Mi4zODggMTQuMTY3OSA1MC4wMTYgMTUuMTQ0IDQ4LjIwMSAxNy4wOThDNDYuMzg3IDE5LjA1MSA0NS41NDkyIDIxLjg0MTkgNDUuNTQ5MiAyNS40Njg5QzQ1LjU0OTIgMjcuMTQyOSA0NS44Mjg0IDI4LjY3OCA0Ni4yNDcgMzAuMjEyQzQ2LjY2NiAzMS42MDcgNDcuMzY0IDMyLjg2MjkgNDguMjAxIDMzLjk3ODlDNDkuMDM5IDM1LjA5NDkgNTAuMTU1IDM1Ljc5MjkgNTEuMjcyIDM2LjQ5MDlDNTIuNTI4IDM3LjA0ODkgNTMuNzg0IDM3LjMyNzkgNTUuMTggMzcuMzI3OUM1NS43MzggMzcuMzI3OSA1Ni40MzYgMzcuMzI3OSA1Ni45OTQgMzcuMTg3OUM1Ny40MTMgMzcuMTg3OSA1Ny42OTIgMzcuMDQ4OSA1OC4xMTEgMzYuOTA5QzU4Ljk0OCAzNi42Mjk5IDU5Ljc4NSAzNi4yMTA5IDYwLjYyMyAzNS42NTM5QzYxLjQ2IDM1LjA5NDkgNjIuMTU4IDM0LjM5OCA2Mi45OTYgMzMuNTYxVjM0LjExODlDNjIuOTk2IDM1LjIzNDkgNjMuMjc1IDM1LjkzMjkgNjMuODMzIDM2LjQ5MDlDNjQuMzkxIDM3LjA0ODkgNjUuMDg5IDM3LjMyNzkgNjUuNzg3IDM3LjMyNzlDNjYuNjI0IDM3LjMyNzkgNjcuMTgzIDM3LjA0ODkgNjcuNzQxIDM2LjQ5MDlDNjguMjk5IDM1LjkzMjkgNjguNDM5IDM1LjA5NDkgNjguNDM5IDMzLjk3ODlWOC44NjU5NEM2OC40MzkgOC4wMjg5NCA2OC4xNiA3LjE5MTk1IDY3Ljc0MSA2LjYzMzk1WiIgZmlsbD0iIzAwM0E5MiI+PC9wYXRoPjxwYXRoIGQ9Ik02MS44NzkgMjkuOTMyOUM2MS4zMjEgMzEuMDQ4OSA2MC42MjMgMzEuNzQ2OSA1OS43ODUgMzIuMzA0OUM1OC45NDggMzIuODYyOSA1Ny45NzEgMzMuMTQxOSA1Ni45OTQgMzMuMTQxOUM1Ni4wMTcgMzMuMTQxOSA1NS4wNCAzMi44NjI5IDU0LjIwMyAzMi4zMDQ5QzUzLjM2NSAzMS43NDY5IDUyLjY2NyAzMC45MDk5IDUyLjEwOSAyOS45MzI5QzUxLjU1MSAyOC44MTY5IDUxLjQxMSAyNy41NjA5IDUxLjQxMSAyNi4wMjY5QzUxLjQxMSAyNC42MzE5IDUxLjY5IDIzLjIzNTkgNTIuMTA5IDIyLjI1OTlDNTIuNTI4IDIxLjE0MzkgNTMuMjI2IDIwLjMwNTkgNTQuMDYzIDE5Ljc0NzlDNTQuOTAxIDE5LjE4OTkgNTUuODc3IDE4LjkxMDkgNTYuOTk0IDE4LjkxMDlINTcuMTM0QzU4LjExMSAxOC45MTA5IDU5LjA4OCAxOS4xODk5IDU5LjkyNSAxOS43NDc5QzYwLjc2MyAyMC4zMDU5IDYxLjQ2MSAyMS4xNDM5IDYyLjAxOSAyMi4yNTk5QzYyLjU3NyAyMy4zNzU5IDYyLjcxNyAyNC42MzE5IDYyLjcxNyAyNi4xNjU5QzYyLjU3NyAyNy40MjE5IDYyLjI5OCAyOC44MTY5IDYxLjg3OSAyOS45MzI5WiIgZmlsbD0iIzAwM0E5MiI+PC9wYXRoPjxwYXRoIGQ9Ik0xMi43NSAxLjA1Mjk0QzE2LjY1OCAtMC4zNDIwNTYgMjEuMTI0MyAtMC4yMDMwNTUgMjQuNjEzNiAyLjU4Nzk0QzI1LjE3MTkgMy4xNDU5NCAyNi4wMTk1IDMuODQyOTQgMjYuMjg4NCA0LjY3OTk0QzI2LjU2NzYgNS43OTY5NCAyNS4wMzIzIDQuNTQwOTUgMjQuODkyNyA0LjQwMDk1QzIzLjc3NjEgMy43MDM5NSAyMi42NTk2IDMuMTQ1OTUgMjEuNDAzNCAyLjcyNjk1QzE0LjcwNCAwLjc3Mzk1MiA4LjQyMzI3IDQuNDAwOTQgNC41MTUyNyA5Ljk4MTk0QzIuODQwNDcgMTIuNDkyOSAxLjg2MzQ4IDE1LjAwNDkgMC44ODY0NzUgMTcuOTM0OUMwLjc0Njg3NSAxOC4yMTM5IDAuNzQ2ODc0IDE4LjYzMTkgMC42MDcyNzUgMTguOTEwOUMwLjMyODE3NSAxOS4zMjk5IDAuNDY3Nzc1IDE4LjA3NCAwLjQ2Nzc3NSAxOC4wNzRDMC42MDcyNzUgMTYuOTU4IDAuODg2NDc1IDE1LjY5ODkgMS4xNjU1NyAxNC41ODU5QzIuOTc5OTcgOC40NDY5NSA3LjAyNzU3IDMuNDI0OTQgMTIuNzUgMS4wNTI5NFoiIGZpbGw9IiMwMDNBOTIiPjwvcGF0aD48cGF0aCBkPSJNMjAuMjg2OSAxMi4wNzQ5QzE5Ljk4NzkgMTQuNzI0OSAxNy44OTMzIDE2LjgxODkgMTUuMjQxNCAxNi44MTg5QzEyLjU4OTYgMTYuODE4OSAxMC40OTQ5IDE0LjcyNDkgMTAuNDk0OSAxMi4wNzQ5QzEwLjQ5NDkgOS40MjQ5NCAxMi43MjkyIDcuMzMwOTQgMTUuMzgxIDcuMzMwOTRDMTguMDMyOSA3LjMzMDk0IDE5Ljk4NzkgOS40MjQ5NCAxOS45ODc5IDEyLjA3NDlaIiBmaWxsPSIjMDAzQTkyIj48L3BhdGg+PC9nPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDBfMzk5OF82ODAzIj48cmVjdCB3aWR0aD0iNDIzIiBoZWlnaHQ9Ijk0IiBmaWxsPSJ3aGl0ZSI+PC9yZWN0PjwvY2xpcFBhdGg+PC9kZWZzPjwvc3ZnPg==" alt="Company Logo">
+            </a>
+            <button class="close-mobile-menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <ul class="mobile-nav-links">
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">Home</a>
+            </li>
+            
+            <li class="mobile-nav-item">
+                <div class="dropdown-toggle">
+                    <a href="#" class="mobile-nav-link">Resume</a>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <ul class="mobile-dropdown-menu">
+                    <li class="mobile-dropdown-item">
+                        <a href="#" class="mobile-dropdown-link">Resume Samples</a>
+                    </li>
+                    <li class="mobile-dropdown-item">
+                        <a href="#" class="mobile-dropdown-link">Resume Builder</a>
+                    </li>
+                    <li class="mobile-dropdown-item">
+                        <a href="#" class="mobile-dropdown-link">Resume Templates</a>
+                    </li>
+                    <li class="mobile-dropdown-item">
+                        <a href="#" class="mobile-dropdown-link">Resume Writing Guide</a>
+                    </li>
+                </ul>
+            </li>
+            
+            <li class="mobile-nav-item">
+                <div class="dropdown-toggle">
+                    <a href="#" class="mobile-nav-link">Cover Letter</a>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <ul class="mobile-dropdown-menu">
+                    <li class="mobile-dropdown-item">
+                        <a href="#" class="mobile-dropdown-link">Cover Letter Samples</a>
+                    </li>
+                    <li class="mobile-dropdown-item">
+                        <a href="#" class="mobile-dropdown-link">Cover Letter Builder</a>
+                    </li>
+                    <li class="mobile-dropdown-item">
+                        <a href="#" class="mobile-dropdown-link">Cover Letter Templates</a>
+                    </li>
+                    <li class="mobile-dropdown-item">
+                        <a href="#" class="mobile-dropdown-link">Cover Letter Writing Guide</a>
+                    </li>
+                </ul>
+            </li>
+            
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">Career Advice</a>
+            </li>
+            
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">About Us</a>
+            </li>
+        </ul>
+        
+        <div class="mobile-auth-buttons">
+            <a href="#" class="btn btn-outline">Sign In</a>
+            <a href="#" class="btn btn-solid">Sign Up</a>
+        </div>
+    </div>
+    
+    <!-- Overlay -->
+    <div class="resume-overlay"></div>
+    
+
+
+    <!-- Resume Builder -->
+
+     <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <h1>My Resume</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-icon" id="templatesBtn">
+                    <i class="fas fa-th-large"></i> Templates
+                </button>
+                <button class="btn btn-icon" id="manageSectionsBtn">
+                    <i class="fas fa-sliders-h"></i> Manage Sections
+                </button>
+                <button class="btn btn-primary" id="downloadBtn">
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+            </div>
+        </div>
+        
+        <!-- Resume Builder -->
+        <div class="resume-builder">
+            <!-- Resume Preview -->
+            <div class="resume-preview" id="resumePreview">
+                <!-- Contact Info Section (Non-movable) -->
+                <div class="resume-section" id="contactInfoSection">
+                    <div class="section-header">
+                        <h2 class="section-title">Contact Information</h2>
+                        <div class="section-actions">
+                            <button class="section-action-btn edit-btn" data-section="contact">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-user"></i>
+                            <span id="contactName"></span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span id="contactPhone"></span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span id="contactEmail"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                
+
+                 <!-- Skills Section -->
+                <div class="resume-section" id="skillsSection">
+                    <div class="move-buttons">
+                        <button class="move-btn move-up-btn" data-section="skillSection">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button class="move-btn move-down-btn" data-section="skillSection">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-header">
+                        <h2 class="section-title">Skills</h2>
+                        <div class="section-actions">
+                            <button class="section-action-btn edit-btn" data-section="skills">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <div class="skills-list">
+                            <span class="skill-tag">HTML</span>
+                            <span class="skill-tag">CSS</span>
+                            <span class="skill-tag">JavaScript</span>
+                            <span class="skill-tag">React</span>
+                            <span class="skill-tag">Node.js</span>
+                            <span class="skill-tag">Git</span>
+                            <span class="skill-tag">Responsive Design</span>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Education Section -->
+                <div class="resume-section" id="educationSection">
+                    <div class="move-buttons">
+                        <button class="move-btn move-up-btn" data-section="educationSection">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button class="move-btn move-down-btn" data-section="educationSection">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-header">
+                        <h2 class="section-title">Education</h2>
+                        <div class="section-actions">
+                            <button class="section-action-btn add-btn" data-section="education">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        
+                    </div>
+                </div>
+
+                <!-- expericence section -->
+                <div class="resume-section" id="experienceSection">
+                    <div class="move-buttons">
+                        <button class="move-btn move-up-btn" data-section="experienceSection">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button class="move-btn move-down-btn" data-section="experienceSection">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-header">
+                        <h2 class="section-title">Experience</h2>
+                        <div class="section-actions">
+                            <button class="section-action-btn add-btn" data-section="experience">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        
+                        
+                    </div>
+                </div>
+               
+                
+                <!-- Additional sections will be added here dynamically -->
+            </div>
+            
+            <!-- Sidebar (Manage Sections) -->
+            <div class="sidebar" id="manageSectionsSidebar" style="display: none;">
+                <h3 class="sidebar-title">Manage Sections</h3>
+                
+                <div class="section-option">
+                    <span class="section-option-label">Summary</span>
+                    <label class="switch">
+                        <input type="checkbox" id="summaryToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <div class="section-option">
+                    <span class="section-option-label">Experience</span>
+                    <label class="switch">
+                        <input type="checkbox" id="experienceToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <div class="section-option">
+                    <span class="section-option-label">Skills</span>
+                    <label class="switch">
+                        <input type="checkbox" id="skillsToggle" checked disabled>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <div class="section-option">
+                    <span class="section-option-label">Education</span>
+                    <label class="switch">
+                        <input type="checkbox" id="educationToggle" checked disabled>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <div class="section-option">
+                    <span class="section-option-label">Languages</span>
+                    <label class="switch">
+                        <input type="checkbox" id="languagesToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <div class="section-option">
+                    <span class="section-option-label">Certificates</span>
+                    <label class="switch">
+                        <input type="checkbox" id="certificatesToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <div class="section-option">
+                    <span class="section-option-label">Awards</span>
+                    <label class="switch">
+                        <input type="checkbox" id="awardsToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+
+                <div class="section-option">
+                    <span class="section-option-label">Intrests</span>
+                    <label class="switch">
+                        <input type="checkbox" id="intrestToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+
+                <div class="section-option">
+                    <span class="section-option-label">Projects</span>
+                    <label class="switch">
+                        <input type="checkbox" id="projectToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <button class="btn btn-primary" id="applySectionsBtn" style="margin-top: 20px; width: 100%;">
+                    Apply Changes
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Info Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Contact Information</h3>
+                <button class="modal-close" id="closeContactModal">&times;</button>
+            </div>
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="name" class="form-label">Full Name</label>
+                    <input type="text" id="name" class="form-control" value="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" id="phone" class="form-control" value="(123) 456-7890">
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" class="form-control" value="john.doe@example.com">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelContact">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Experience Modal -->
+    <div class="modal-overlay" id="experienceModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Experience</h3>
+                <button class="modal-close" id="closeExperienceModal">&times;</button>
+            </div>
+            <form id="experienceForm">
+                <div class="form-group">
+                    <label for="jobTitle" class="form-label">Job Title</label>
+                    <input type="text" id="jobTitle" class="form-control" value="Senior Web Developer">
+                </div>
+                <div class="form-group">
+                    <label for="company" class="form-label">Company</label>
+                    <input type="text" id="company" class="form-control" value="Tech Solutions Inc.">
+                </div>
+                <div class="form-group">
+                    <label for="jobDuration" class="form-label">Duration</label>
+                    <input type="text" id="jobDuration" class="form-control" value="Jan 2020 - Present">
+                </div>
+                <div class="form-group">
+                    <label for="jobDescription" class="form-label">Description</label>
+                    
+                     <div class="notepad-container">
+                        <div class="toolbar">
+                            <button title="Bold" data-command="bold">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"></path></svg>
+                            </button>
+                            <button title="Italic" data-command="italic">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="10" y1="4" y2="4"></line><line x1="14" x2="5" y1="20" y2="20"></line><line x1="15" x2="9" y1="4" y2="20"></line></svg>
+                            </button>
+                            <button title="Underline" data-command="underline">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"></path><line x1="4" x2="20" y1="20" y2="20"></line></svg>
+                            </button>
+                            <button title="Strikethrough" data-command="strikeThrough">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4H9a3 3 0 0 0-2.83 4"></path><path d="M14 12a4 4 0 0 1 0 8H6"></path><line x1="4" x2="20" y1="12" y2="12"></line></svg>
+                            </button>
+                            <button title="Insert Link" id="insertLink">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            </button>
+                            <button title="Heading 1" data-command="formatBlock" data-value="h1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"></path><path d="M4 18V6"></path><path d="M12 18V6"></path><path d="m17 12 3-2v8"></path></svg>
+                            </button>
+                            <button title="Heading 2" data-command="formatBlock" data-value="h2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"></path><path d="M4 18V6"></path><path d="M12 18V6"></path><path d="M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"></path></svg>
+                            </button>
+                            <button title="Bullet List" data-command="insertUnorderedList">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h.01"></path><path d="M3 18h.01"></path><path d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M8 6h13"></path></svg>
+                            </button>
+                            <button title="Ordered List" data-command="insertOrderedList">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h11"></path><path d="M10 18h11"></path><path d="M10 6h11"></path><path d="M4 10h2"></path><path d="M4 6h1v4"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+                            </button>
+                            <button title="Quote" data-command="formatBlock" data-value="blockquote">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg>
+                            </button>
+                            <button title="Code" data-command="formatBlock" data-value="pre">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            </button>
+                        </div>
+                        <div class="editor" id="editor" contenteditable="true"></div>
+                    </div>
+                    <div class="overlay-text-editor" id="overlay-text-editor"></div>
+                    <div class="link-dialog" id="linkDialog">
+                        <h3>Insert Link</h3>
+                        <input type="text" id="linkUrl" placeholder="Enter URL">
+                        <div>
+                            <button id="insertLinkBtn">Insert</button>
+                            <button class="cancel" id="cancelLinkBtn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelExperience">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Skills Modal -->
+    <div class="modal-overlay" id="skillsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Skills</h3>
+                <button class="modal-close" id="closeSkillsModal">&times;</button>
+            </div>
+            <form id="skillsForm">
+                <div class="form-group">
+                    <label for="skillsInput" class="form-label">Skills (comma separated)</label>
+                    <textarea id="skillsInput" class="form-control" rows="4">HTML, CSS, JavaScript, React, Node.js, Git, Responsive Design</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelSkills">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Education Modal -->
+    <div class="modal-overlay" id="educationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Education</h3>
+                <button class="modal-close" id="closeEducationModal">&times;</button>
+            </div>
+            <form id="educationForm">
+                <div class="form-group">
+                    <label for="degree" class="form-label">Degree</label>
+                    <input type="text" id="degree" class="form-control" value="Bachelor of Science in Computer Science">
+                </div>
+                <div class="form-group">
+                    <label for="institution" class="form-label">Institution</label>
+                    <input type="text" id="institution" class="form-control" value="State University">
+                </div>
+                <div class="form-group">
+                    <label for="educationDuration" class="form-label">Duration</label>
+                    <input type="text" id="educationDuration" class="form-control" value="2013 - 2017">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelEducation">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Summary Modal -->
+    <div class="modal-overlay" id="summaryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Summary</h3>
+                <button class="modal-close" id="closeSummaryModal">&times;</button>
+            </div>
+            <form id="summaryForm">
+                <div class="form-group">
+                    <label for="summaryText" class="form-label">Professional Summary</label>
+                    <textarea id="summaryText" class="form-control" rows="6" placeholder="Experienced web developer with 5+ years of experience in building responsive and user-friendly websites. Proficient in HTML, CSS, JavaScript, and modern frameworks like React. Strong problem-solving skills and a passion for creating efficient and visually appealing web applications."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelSummary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Languages Modal -->
+    <div class="modal-overlay" id="languagesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Languages</h3>
+                <button class="modal-close" id="closeLanguagesModal">&times;</button>
+            </div>
+            <form id="languagesForm">
+                <div class="form-group">
+                    <label for="languagesInput" class="form-label">Languages (comma separated)</label>
+                    <textarea id="languagesInput" class="form-control" rows="4">English (Fluent), Spanish (Intermediate), French (Basic)</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelLanguages">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Certificates Modal -->
+    <div class="modal-overlay" id="certificatesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Certificates</h3>
+                <button class="modal-close" id="closeCertificatesModal">&times;</button>
+            </div>
+            <form id="certificatesForm">
+                <div class="form-group">
+                    <label for="certificatesInput" class="form-label">Certificates (one per line)</label>
+                    <textarea id="certificatesInput" class="form-control" rows="6">Certified Web Developer - W3Schools (2020)
+AWS Certified Developer - Associate (2019)
+Google Analytics Individual Qualification (2018)</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelCertificates">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Awards Modal -->
+    <div class="modal-overlay" id="awardsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Awards</h3>
+                <button class="modal-close" id="closeAwardsModal">&times;</button>
+            </div>
+            <form id="awardsForm">
+                <div class="form-group">
+                    <label for="awardsInput" class="form-label">Awards (one per line)</label>
+                    <textarea id="awardsInput" class="form-control" rows="6">Employee of the Month - Tech Solutions Inc. (June 2021)
+Best Web Design - State University Hackathon (2016)
+Outstanding Academic Achievement - State University (2015)</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelAwards">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+     <!-- Intrest Model -->
+    <div class="modal-overlay" id="intrestModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Intrest</h3>
+                <button class="modal-close" id="closeIntrestModal">&times;</button>
+            </div>
+            <form id="intrestForm">
+                <div class="form-group">
+                    <label for="intrestInput" class="form-label">Intrests (comma separated)</label>
+                    <textarea id="intrestInput" class="form-control" rows="4">Swimming, Running, Travelling</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelIntrest">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Project Modal -->
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Project</h3>
+                <button class="modal-close" id="closeProjectModal">&times;</button>
+            </div>
+            <form id="projectForm">
+                <div class="form-group">
+                    <label for="projectTitle" class="form-label">Project Title</label>
+                    <input type="text" id="projectTitle" class="form-control" placeholder="Expense Tracker App">
+                </div>
+                <div class="form-group">
+                    <label for="projectDescription" class="form-label">Project Description</label>
+                    <input type="text" id="projectDescription" class="form-control" placeholder="Built a full-stack expense tracker to manage daily income and expenses with real-time balance updates, category-wise tracking">
+                </div>
+                <div class="form-group">
+                    <label for="projectDuration" class="form-label">Duration</label>
+                    <input type="text" id="projectDuration" class="form-control" placeholder="Jan 2020 - Present (Optional)">
+                </div>
+                <div class="form-group">
+                    <label for="projectDescription" class="form-label">Summary</label>
+                    
+                     <div class="notepad-container">
+                        <div class="toolbar">
+                            <button title="Bold" data-command="bold">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"></path></svg>
+                            </button>
+                            <button title="Italic" data-command="italic">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="10" y1="4" y2="4"></line><line x1="14" x2="5" y1="20" y2="20"></line><line x1="15" x2="9" y1="4" y2="20"></line></svg>
+                            </button>
+                            <button title="Underline" data-command="underline">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"></path><line x1="4" x2="20" y1="20" y2="20"></line></svg>
+                            </button>
+                            <button title="Strikethrough" data-command="strikeThrough">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4H9a3 3 0 0 0-2.83 4"></path><path d="M14 12a4 4 0 0 1 0 8H6"></path><line x1="4" x2="20" y1="12" y2="12"></line></svg>
+                            </button>
+                            <button title="Insert Link" id="insertLink">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            </button>
+                            <button title="Heading 1" data-command="formatBlock" data-value="h1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"></path><path d="M4 18V6"></path><path d="M12 18V6"></path><path d="m17 12 3-2v8"></path></svg>
+                            </button>
+                            <button title="Heading 2" data-command="formatBlock" data-value="h2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"></path><path d="M4 18V6"></path><path d="M12 18V6"></path><path d="M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"></path></svg>
+                            </button>
+                            <button title="Bullet List" data-command="insertUnorderedList">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h.01"></path><path d="M3 18h.01"></path><path d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M8 6h13"></path></svg>
+                            </button>
+                            <button title="Ordered List" data-command="insertOrderedList">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h11"></path><path d="M10 18h11"></path><path d="M10 6h11"></path><path d="M4 10h2"></path><path d="M4 6h1v4"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+                            </button>
+                            <button title="Quote" data-command="formatBlock" data-value="blockquote">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg>
+                            </button>
+                            <button title="Code" data-command="formatBlock" data-value="pre">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            </button>
+                        </div>
+                        <div class="editor" id="projectEditor" contenteditable="true"></div>
+                    </div>
+                    <div class="overlay-text-editor" id="overlay-text-editor"></div>
+                    <div class="link-dialog" id="linkDialog">
+                        <h3>Insert Link</h3>
+                        <input type="text" id="linkUrl" placeholder="Enter URL">
+                        <div>
+                            <button id="insertLinkBtn">Insert</button>
+                            <button class="cancel" id="cancelLinkBtn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelProject">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Templates Modal -->
+    <div class="modal-overlay" id="templatesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Select a Template</h3>
+                <button class="modal-close" id="closeTemplatesModal">&times;</button>
+            </div>
+            <div class="templates-grid">
+                <div class="template-card">
+                    <div class="template-image">
+                        <i class="fas fa-file-alt" style="font-size: 3rem;"></i>
+                    </div>
+                    <div class="template-name">Professional</div>
+                </div>
+                <div class="template-card">
+                    <div class="template-image">
+                        <i class="fas fa-briefcase" style="font-size: 3rem;"></i>
+                    </div>
+                    <div class="template-name">Modern</div>
+                </div>
+                <div class="template-card">
+                    <div class="template-image">
+                        <i class="fas fa-paint-brush" style="font-size: 3rem;"></i>
+                    </div>
+                    <div class="template-name">Creative</div>
+                </div>
+                <div class="template-card">
+                    <div class="template-image">
+                        <i class="fas fa-laptop-code" style="font-size: 3rem;"></i>
+                    </div>
+                    <div class="template-name">Technical</div>
+                </div>
+            </div>
+            <div class="form-actions" style="margin-top: 20px;">
+                <button type="button" class="btn btn-outline" id="cancelTemplates">Cancel</button>
+                <button type="button" class="btn btn-primary" id="applyTemplate">Apply Template</button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <!-- editExperienceModal  -->
+    <div class="modal-overlay" id="editExperienceModal">
+        <div class="modal-container">
+            <form id="editExperienceForm">
+                <div class="modal-header">
+                    <h3 class="modal-title">Edit Experience</h3>
+                    <button class="modal-close" id="closeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    
+                        <div class="form-group">
+                            <label for="editJobTitle" class="form-label">Job Title</label>
+                            <input type="text" id="editJobTitle" class="form-input" placeholder="e.g. Senior Web Developer" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editCompany" class="form-label">Company</label>
+                            <input type="text" id="editCompany" class="form-input" placeholder="e.g. Google Inc." required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editjobDuration" class="form-label">Duration</label>
+                            <input type="text" id="editjobDuration" class="form-control" value="Jan 2020 - Present">                            
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editDescription" class="form-label">Description</label>
+                            <textarea id="editDescription" class="form-input form-textarea" placeholder="Describe your responsibilities and achievements..."></textarea>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelEdit" type="button">Cancel</button>
+                    <button class="btn btn-primary" id="saveExperience" type="submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- editEducationModal  -->
+    <div class="modal-overlay" id="editEducationModal">
+        <div class="modal-container">
+            <form id="editEducationForm">
+                <div class="modal-header">
+                    <h3 class="modal-title">Edit Education</h3>
+                    <button class="modal-close" id="closeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    
+                        <div class="form-group">
+                            <label for="editDegree" class="form-label">Degree</label>
+                            <input type="text" id="editDegree" class="form-input" placeholder="e.g. Bachelor of Science" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editInstitution" class="form-label">Institution</label>
+                            <input type="text" id="editInstitution" class="form-input" placeholder="e.g. Harvard University" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editDuration" class="form-label">Duration</label>
+                            <input type="text" id="editDuration" class="form-input" required>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelEdit" type="button">Cancel</button>
+                    <button class="btn btn-primary" id="saveEducation" type="submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+
+    <script src="./js/resume.js"></script>
+</body>
+</html>

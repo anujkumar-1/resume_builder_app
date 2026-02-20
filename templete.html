@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Template Selector</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .template-btn-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px;
+        }
+        
+        .template-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .template-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .color-palette {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 15px;
+            width: 200px;
+            z-index: 10;
+        }
+        
+        .template-btn-container:hover .color-palette {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: #333;
+        }
+        
+        .change-template {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .change-template:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* Template Modal Styles */
+        .template-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 900px;
+        }
+        
+        .close-modal {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .template-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .template-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .template-img {
+            width: 100%;
+            height: auto;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .template-name {
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+        
+        .select-template {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .select-template:hover {
+            background-color: #45a049;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="template-btn-container">
+        <button class="template-btn">Template</button>
+        <div class="color-palette">
+            <h3 style="margin-top: 0; margin-bottom: 15px;">Choose Color</h3>
+            <div class="color-options">
+                <div class="color-option" style="background-color: #4CAF50;" data-color="#4CAF50"></div>
+                <div class="color-option" style="background-color: #2196F3;" data-color="#2196F3"></div>
+                <div class="color-option" style="background-color: #9C27B0;" data-color="#9C27B0"></div>
+                <div class="color-option" style="background-color: #FF5722;" data-color="#FF5722"></div>
+                <div class="color-option" style="background-color: #607D8B;" data-color="#607D8B"></div>
+                <div class="color-option" style="background-color: #795548;" data-color="#795548"></div>
+            </div>
+            <button class="change-template" id="changeTemplateBtn">Change Template</button>
+        </div>
+    </div>
+
+    <!-- Template Selection Modal -->
+    <div class="template-modal" id="templateModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Select a Resume Template</h2>
+            <div class="template-gallery">
+                <div class="template-card">
+                    <img src="https://via.placeholder.com/400x600.png?text=Apollo+Resume+Template" alt="Apollo Template" class="template-img">
+                    <div class="template-name">Apollo</div>
+                    <button class="select-template" data-template="apollo">Select Apollo</button>
+                </div>
+                <div class="template-card">
+                    <img src="https://via.placeholder.com/400x600.png?text=Terra+Resume+Template" alt="Terra Template" class="template-img">
+                    <div class="template-name">Terra</div>
+                    <button class="select-template" data-template="terra">Select Terra</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Color selection
+            const colorOptions = document.querySelectorAll('.color-option');
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    colorOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    const selectedColor = this.getAttribute('data-color');
+                    console.log('Selected color:', selectedColor);
+                    // Apply this color to your template
+                    document.querySelector('.template-btn').style.backgroundColor = selectedColor;
+                });
+            });
+
+            // Template modal
+            const modal = document.getElementById('templateModal');
+            const changeTemplateBtn = document.getElementById('changeTemplateBtn');
+            const closeModal = document.querySelector('.close-modal');
+            const selectTemplateBtns = document.querySelectorAll('.select-template');
+
+            changeTemplateBtn.addEventListener('click', function() {
+                modal.style.display = 'block';
+            });
+
+            closeModal.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            selectTemplateBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const template = this.getAttribute('data-template');
+                    console.log('Selected template:', template);
+                    // Load the selected template here
+                    modal.style.display = 'none';
+                    alert(`You selected the ${template} template!`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

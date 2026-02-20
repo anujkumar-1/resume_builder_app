@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Notepad</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .notepad-container {
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            padding: 8px;
+            background-color: #fff;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid #e2e8f0;
+            border-bottom: none;
+        }
+        
+        .toolbar button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4a5568;
+        }
+        
+        .toolbar button:hover {
+            background-color: #edf2f7;
+        }
+        
+        .toolbar button.active {
+            background-color: #e2e8f0;
+            color: #2d3748;
+        }
+        
+        .editor {
+            min-height: 400px;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0 0 8px 8px;
+            outline: none;
+            line-height: 1.6;
+        }
+        
+        .editor:focus {
+            border-color: #4299e1;
+        }
+        
+        .editor h1 {
+            font-size: 24px;
+            margin: 16px 0;
+            font-weight: bold;
+        }
+        
+        .editor h2 {
+            font-size: 20px;
+            margin: 14px 0;
+            font-weight: bold;
+        }
+        
+        .editor ul, .editor ol {
+            padding-left: 24px;
+            margin: 8px 0;
+        }
+        
+        .editor blockquote {
+            border-left: 3px solid #ddd;
+            padding-left: 12px;
+            margin: 8px 0;
+            color: #666;
+        }
+        
+        .editor pre {
+            background-color: #f8f8f8;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: monospace;
+        }
+        
+        .editor a {
+            color: #3182ce;
+            text-decoration: underline;
+        }
+        
+        .link-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            display: none;
+        }
+        
+        .link-dialog input {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .link-dialog button {
+            padding: 8px 16px;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        
+        .link-dialog button.cancel {
+            background-color: #e53e3e;
+        }
+        
+        .overlay-text-editor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="notepad-container">
+        <div class="toolbar">
+            <button title="Bold" data-command="bold">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"></path></svg>
+            </button>
+            <button title="Italic" data-command="italic">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="10" y1="4" y2="4"></line><line x1="14" x2="5" y1="20" y2="20"></line><line x1="15" x2="9" y1="4" y2="20"></line></svg>
+            </button>
+            <button title="Underline" data-command="underline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"></path><line x1="4" x2="20" y1="20" y2="20"></line></svg>
+            </button>
+            <button title="Strikethrough" data-command="strikeThrough">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4H9a3 3 0 0 0-2.83 4"></path><path d="M14 12a4 4 0 0 1 0 8H6"></path><line x1="4" x2="20" y1="12" y2="12"></line></svg>
+            </button>
+            <button title="Insert Link" id="insertLink">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            </button>
+            <button title="Heading 1" data-command="formatBlock" data-value="h1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"></path><path d="M4 18V6"></path><path d="M12 18V6"></path><path d="m17 12 3-2v8"></path></svg>
+            </button>
+            <button title="Heading 2" data-command="formatBlock" data-value="h2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"></path><path d="M4 18V6"></path><path d="M12 18V6"></path><path d="M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"></path></svg>
+            </button>
+            <button title="Bullet List" data-command="insertUnorderedList">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h.01"></path><path d="M3 18h.01"></path><path d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M8 6h13"></path></svg>
+            </button>
+            <button title="Ordered List" data-command="insertOrderedList">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h11"></path><path d="M10 18h11"></path><path d="M10 6h11"></path><path d="M4 10h2"></path><path d="M4 6h1v4"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+            </button>
+            <button title="Quote" data-command="formatBlock" data-value="blockquote">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg>
+            </button>
+            <button title="Code" data-command="formatBlock" data-value="pre">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            </button>
+        </div>
+        <div class="editor" id="editor" contenteditable="true"></div>
+    </div>
+    <div class="cont" id="cont"></div>
+    <div class="overlay-text-editor" id="overlay-text-editor"></div>
+    <div class="link-dialog" id="linkDialog">
+        <h3>Insert Link</h3>
+        <input type="text" id="linkUrl" placeholder="Enter URL">
+        <div>
+            <button id="insertLinkBtn">Insert</button>
+            <button class="cancel" id="cancelLinkBtn">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const editor = document.getElementById('editor');
+            const toolbarButtons = document.querySelectorAll('.toolbar button[data-command]');
+            const insertLinkBtn = document.getElementById('insertLink');
+            const linkDialog = document.getElementById('linkDialog');
+            const overlayTextEditor = document.getElementById('overlay-text-editor');
+            const linkUrlInput = document.getElementById('linkUrl');
+            const insertLinkBtnDialog = document.getElementById('insertLinkBtn');
+            const cancelLinkBtn = document.getElementById('cancelLinkBtn');
+            const cont = document.getElementById("cont")
+
+            // Focus editor on load
+            editor.focus();
+            
+            // Handle toolbar button clicks
+            toolbarButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const command = this.getAttribute('data-command');
+                    const value = this.getAttribute('data-value');
+                    
+                    // Save current selection
+                    const selection = window.getSelection();
+                    console.log(selection)
+                    const range = selection.getRangeAt(0);
+                    console.log(range)
+                    // Execute command
+                    if (value) {
+                        document.execCommand(command, false, value);
+                    } else {
+                        document.execCommand(command, false, null);
+                    }
+                    
+                    // Check if the button should be active
+                    updateActiveButtons();
+                    
+                    // Restore focus to editor
+                    editor.focus();
+                });
+            });
+            
+            // Update active buttons based on current selection
+            function updateActiveButtons() {
+                toolbarButtons.forEach(button => {
+                    const command = button.getAttribute('data-command');
+                    const value = button.getAttribute('data-value');
+                    
+                    if (command === 'formatBlock') {
+                        const blockElement = document.queryCommandValue('formatBlock');
+                        if (blockElement === value) {
+                            button.classList.add('active');
+                        } else {
+                            button.classList.remove('active');
+                        }
+                    } else {
+                        if (document.queryCommandState(command)) {
+                            button.classList.add('active');
+                        } else {
+                            button.classList.remove('active');
+                        }
+                    }
+                });
+            }
+            
+            // Show link dialog
+            insertLinkBtn.addEventListener('click', function() {
+                // Save current selection
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    currentRange = selection.getRangeAt(0);
+                }
+                
+                linkDialog.style.display = 'block';
+                overlayTextEditor.style.display = 'block';
+                linkUrlInput.focus();
+            });
+            
+            // Insert link
+            insertLinkBtnDialog.addEventListener('click', function() {
+                const url = linkUrlInput.value.trim();
+                if (url) {
+                    // Restore selection
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(currentRange);
+                    
+                    // Create link
+                    document.execCommand('createLink', false, url);
+                    
+                    // Close dialog
+                    linkDialog.style.display = 'none';
+                    overlayTextEditor.style.display = 'none';
+                    linkUrlInput.value = '';
+                    
+                    // Focus editor
+                    editor.focus();
+                }
+            });
+            
+            // Cancel link insertion
+            cancelLinkBtn.addEventListener('click', function() {
+                linkDialog.style.display = 'none';
+                overlayTextEditor.style.display = 'none';
+                linkUrlInput.value = '';
+                editor.focus();
+            });
+            
+            // Update button states when selection changes
+            document.addEventListener('selectionchange', function() {
+                updateActiveButtons();
+            });
+            
+            // Handle paste events to clean up formatting
+            editor.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+                document.execCommand('insertText', false, text);
+            });
+
+
+            // Add this with your other event listeners
+            editor.addEventListener('input', function() {
+                console.log('Content changed:', editor.value);
+                cont.innerHTML = editor.innerHTML
+            });
+        });
+    </script>
+</body>
+</html>

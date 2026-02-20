@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <link rel="stylesheet" href="./styles/login.css">
+    <script src="https://www.google.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Welcome back</h1>
+            <p>Please enter your credentials to login</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-container">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                    <span class="toggle-password" id="togglePassword">👁️</span>
+                </div>
+            </div>
+            
+            <a href="#" class="forgot-password">Forgot password?</a>
+            
+            <button type="submit" class="btn btn-primary">Login</button>
+            
+            <div class="signup-link">
+                Don't have an account? <a href="./Signup.html">Sign Up</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="./js/login.js"></script>
+</body>
+</html>
