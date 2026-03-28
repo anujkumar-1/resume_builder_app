@@ -22,6 +22,22 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "India"
   },
+  sub:{
+    type: String,
+    default: null
+
+  },
+  picture:{
+    type: String,
+    default: null
+
+
+  },
+  given_name:{
+    type: String,
+    default: null
+
+  }
 }, {
   timestamps: true
 });

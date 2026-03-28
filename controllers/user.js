@@ -1,6 +1,27 @@
 import User from "../models/user.js"
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
+import axios from 'axios';
+import dotenv from "dotenv"
+dotenv.config({})
+const SECRET_KEY = process.env.GOOGLE_RECAPTCHA_SECRET_ID
+async function verifyToken(userToken) {
+  const url = `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${userToken}`;
+
+  try {
+    const response = await axios.post(url);
+    const { success, score } = response.data;
+
+    if (success) {
+      return { verified: true}
+    } else {
+      return { verified: false};
+    }
+  } catch (error) {
+    console.error("Verification request failed:", error.message);
+    throw new Error("Unable to verify reCAPTCHA");
+  }
+}
 
 
 export function generateAccessTokens(id, name, email){
@@ -12,36 +33,46 @@ export function generateAccessTokens(id, name, email){
 export const signUp = async (req, res)=>{
     try {
         // const t = await sequelize.transaction()
-        const username = req.body.name
-        const email = req.body.email
-        const password = req.body.password
+        const {recaptcha_token, name, email, password} = req.body
+        const saltRounds = 10
+        if(!recaptcha_token || !name || !email || !password){
+            return res.status(400).json({success: false, message: "Bad Request"})
+        }
 
-        console.log(username, email, password)
-        const saltrounds = 10
+        const result = await verifyToken(recaptcha_token)
+        if(!result.verified){
+            return res.status(400).json({success: false, message: "Bad Request"})
+        }
 
+        
         const userAlreadyExist = await User.find({ email: email });
         console.log("userAlreadyExist", userAlreadyExist.length)
 
-        if(userAlreadyExist.length > 0){
-            res.status(401).json({message: 'User Already Exist. Try Another'});
-            
-        }
-        else{
-            bcrypt.hash(password, saltrounds, async(err, hash)=>{
-                if(err){
-                
-                    throw new Error("Something went wrong")
-                }
-                const data = await User.create({username: username, email: email, password: hash})
-                // await t.commit()
-                res.status(201).json({user: data})
-            })
-            
+        if (userAlreadyExist.length>0) {
+            return res.status(409).json({ success: false, message: 'User already exists' });
         }
 
+
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        const newUser = await User.create({
+            username: name,
+            email: email,
+            password: hashedPassword
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "User signed up successfully",
+            userId: newUser._id
+        });
+
+
     } catch (error) {
-        // await t.rollback()
         console.log("signUp :", error)
+        if (!res.headersSent) {
+            return res.status(500).json({ success: false, message: "Internal server error" });
+        }   
     }
 }
 
@@ -49,34 +80,52 @@ export const signUp = async (req, res)=>{
 
 export const login = async (req, res)=>{
     try {
-        const email = req.query.verifyEmail
-        const password = req.query.verifyPassword
+        const {email, password, captchaToken} = req.body
         console.log(email, password)
-        const user = await User.find({email: email});
-        console.log(user)
-
-        if (user.length > 0) {
-            bcrypt.compare(password, user[0].password, function(err, result) {
-                // result == true
-                if(err){
-                    throw new Error("Something went wrong")
-                }
-                if(result===true){
-                    console.log("user result", user[0]._id, user[0].username, user[0].email, )
-                    res.status(200).json({user: user, message: "logged in sucessfully", token: generateAccessTokens(user[0]._id, user[0].username, user[0].email)});
-                }
-                else{
-                    res.status(401).json({message: "User not authorized"});
-                }
-            });
-            
-            
-        }else {
-            res.status(404).json({ message: 'User not found' });
+        const verifiedEmail = validateEmail(email)
+        const verifiedPassword = validatePassword(password)
+        if(!email || !password || !captchaToken){
+            return res.status(400).json({success: false, message: "Bad Request, Missing email or password or captcha"})
         }
-        
+        if(!verifiedEmail || !verifiedPassword){
+            return res.status(400).json({success: false, message: "Bad Request, Incorrect email or password"})
+        }
+        const user = await User.findOne({ email }).select('password username email').lean()
+        if(!user){
+            return res.status(404).json({success: false, message: "Bad Request, User not found"})
+        }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+    // 2. Handle the result
+        if (!isMatch) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Invalid email or password" 
+            });
+        }
+            
+        const token = generateAccessTokens(user._id, user.username, user.email);
+    
+        return res.status(200).json({
+            success: true,
+            message: "Logged in successfully",
+            token
+        });
         
     } catch (error) {
         console.log("login :", error)
+        return res.status(500).json({ success: false, message: "Server error during authentication" });
     }
+}
+
+
+function validateEmail(email) {
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return regex.test(email);
+}
+
+
+function validatePassword(password){
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password)
 }

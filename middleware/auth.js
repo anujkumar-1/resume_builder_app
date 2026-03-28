@@ -12,13 +12,15 @@ const auth = async (req, res, next)=>{
 
                 }
                 req.user = user;
+                console.log("user", user)
+                console.log("req.user", req.user)
                 next();
             }) 
         }
         
     } catch (error) {
         console.error("auth :", error)
-        res.status(500).json({message: "internal server error in auth"})
+        res.status(500).json({message: "missing credentials, please login again"})
     }
 }
 export default auth;

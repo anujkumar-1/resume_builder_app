@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Form</title>
     <link rel="stylesheet" href="./styles/login.css">
-    <script src="https://www.google.com"></script>
+    <script src="/js/config.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 </head>
 <body>
+    <div id="toast-container"></div>
+
     <div class="login-container">
         <div class="login-header">
             <h1>Welcome back</h1>
@@ -30,16 +34,26 @@
                 </div>
             </div>
             
-            <a href="#" class="forgot-password">Forgot password?</a>
+            <div class="form-group">
+                <div class="g-recaptcha" data-sitekey="6LcCpYIsAAAAAKU6uNGCMYixf_upf75XGmEqHUVR"></div>
+            </div>
+            <a href="./Forget_Password" class="forgot-password">Forgot password?</a>
             
             <button type="submit" class="btn btn-primary">Login</button>
-            
-            <div class="signup-link">
-                Don't have an account? <a href="./Signup.html">Sign Up</a>
-            </div>
         </form>
+
+        <div class="form-group">
+            <p class="breaker">OR</p>
+            <br>
+            <button class="google-btn" id="google-btn"></button>
+
+            <div class="signup-link">
+                Don't have an account? <a href="./Signup">Sign Up</a>
+            </div>
+        <div>
     </div>
 
-    <script src="./js/login.js"></script>
+    <script src="/js/login.js"></script>
+
 </body>
 </html>

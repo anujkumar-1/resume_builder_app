@@ -8,46 +8,61 @@ import { fileURLToPath } from 'url';
 dotenv.config();
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
-
-
 
 // __dirname workaround for ES6
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(express.static(path.join(__dirname, 'views')));
-
 app.use(express.json())
-app.use(express.urlencoded({ extended: false })); 
+app.use(express.urlencoded({ extended: false }));
 
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors())
 
 // Routes
 import userRoutes from "./routes/userRoutes.js"
 import resumeRoutes from "./routes/resumeRoutes.js"
 
-app.use(cors())
 
 app.use("/users", userRoutes)
 app.use("/resume", resumeRoutes)
 
 
 
+app.get('/{:page}', (req, res, next) => {
+    let page = req.params.page || 'Login'; // default to index
+    console.log("first", page)
+    let filePath = path.join(__dirname, 'Public', `${page}.html`);
 
-app.use("/resume", (req, res)=>{
-  res.sendFile(path.join(__dirname, "views", "Resume.html"))
-})
-
-
-
-app.use('/', (req, res) => {
-    console.log("urlll", req)
-  res.sendFile(path.join(__dirname, 'views', 'Signup.html'));
+    const validLoginPages = ['Login', 'login'];
+    const validSignupPages = ["Signup", "signup"]
+  
+    if (validLoginPages.includes(page)) {
+        // Send admin.html for all valid admin pages
+        const pagePath = path.join(__dirname, 'views', 'Login.html');
+        return res.sendFile(pagePath);
+    } 
+    else if(validSignupPages.includes(page)){
+        const pagePath = path.join(__dirname, 'views', 'Signup.html');
+        return res.sendFile(pagePath);
+    }
+    else {
+        // Handle other pages normally
+        const filePath = path.join(__dirname, 'views', `${page}.html`);
+        res.sendFile(filePath, (err) => {
+            if (err) {
+                next(); // Proceed to 404 handler if file not found
+            }
+        });
+    }
 });
 
-console.log(process.env.MONGO_URI)
+
+
 // MongoDB connection
-mongoose.connect("mongodb://host.docker.internal:27017/resume", {
+mongoose.connect("mongodb://localhost:27017/resume", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })

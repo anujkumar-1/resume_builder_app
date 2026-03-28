@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indeed style · navbar + dropdowns + hamburger</title>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    body {
+      background: #f6f7f9;
+      min-height: 100vh;
+    }
+
+    /* main navbar */
+    .navbar {
+      background-color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03);
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      border-bottom: 1px solid #e4e5e7;
+    }
+
+    .navbar-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 68px; /* indeed-like height */
+    }
+
+    /* left side: logo + desktop dropdown nav */
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+    }
+
+    .logo a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: #2557a7;
+      font-weight: 700;
+      font-size: 1.7rem;
+      letter-spacing: -0.4px;
+    }
+
+    .logo i {
+      font-size: 2rem;
+      margin-right: 5px;
+      color: #2557a7;
+    }
+
+    /* desktop navigation with dropdown containers */
+    .nav-dropdowns {
+      display: flex;
+      list-style: none;
+      gap: 28px;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropbtn {
+      text-decoration: none;
+      color: #2d2d2d;
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 8px 0;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .dropbtn i {
+      font-size: 0.75rem;
+      color: #6f6f6f;
+      transition: transform 0.2s;
+    }
+
+    .dropdown:hover .dropbtn {
+      color: #2557a7;
+      border-bottom-color: #2557a7;
+    }
+
+    .dropdown:hover .dropbtn i {
+      color: #2557a7;
+      transform: rotate(180deg);
+    }
+
+    /* dropdown content */
+    .dropdown-content {
+      position: absolute;
+      top: 42px;
+      left: 0;
+      background: white;
+      min-width: 220px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      border-radius: 10px;
+      padding: 8px 0;
+      display: none;
+      z-index: 10;
+      border: 1px solid #eaebed;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-content a {
+      color: #2d2d2d;
+      padding: 10px 18px;
+      text-decoration: none;
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 400;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #edf2fa;
+      color: #2557a7;
+    }
+
+    .dropdown-content a i {
+      margin-right: 10px;
+      width: 18px;
+      color: #4f5b66;
+    }
+
+    /* right side (desktop) */
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .employer-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: #2d2d2d;
+      font-weight: 500;
+      font-size: 0.95rem;
+      border-right: 1px solid #d2d6da;
+      padding-right: 24px;
+      white-space: nowrap;
+    }
+
+    .employer-link i {
+      color: #2557a7;
+    }
+
+    .employer-link:hover {
+      color: #2557a7;
+    }
+
+    .post-job-btn {
+      background-color: #2557a7;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: background-color 0.15s;
+      border: 1px solid #2557a7;
+    }
+
+    .post-job-btn i {
+      font-size: 0.9rem;
+    }
+
+    .post-job-btn:hover {
+      background-color: #1a4380;
+    }
+
+    .sign-in {
+      text-decoration: none;
+      color: #2d2d2d;
+      font-weight: 600;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    .sign-in:hover {
+      color: #2557a7;
+      text-decoration: underline;
+    }
+
+    /* ----- hamburger (hidden on desktop) ----- */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 44px;
+      height: 44px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .hamburger:hover {
+      background-color: #f0f2f5;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background-color: #2d2d2d;
+      margin: 3px 0;
+      border-radius: 2px;
+      transition: 0.2s;
+    }
+
+    /* mobile overlay + drawer */
+    .mobile-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 2000;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s ease, visibility 0.2s;
+    }
+
+    .mobile-menu-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: -320px;
+      width: 300px;
+      height: 100%;
+      background-color: white;
+      box-shadow: -4px 0 16px rgba(0,0,0,0.15);
+      padding: 24px 16px 24px 20px;
+      transition: right 0.25s ease-out;
+      display: flex;
+      flex-direction: column;
+      z-index: 2001;
+      overflow-y: auto;
+    }
+
+    .mobile-menu-overlay.active .mobile-drawer {
+      right: 0;
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid #e9eaec;
+      padding-bottom: 16px;
+    }
+
+    .drawer-logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #2557a7;
+    }
+
+    .drawer-logo i {
+      margin-right: 5px;
+    }
+
+    .close-drawer {
+      background: none;
+      border: none;
+      font-size: 2.2rem;
+      cursor: pointer;
+      color: #6f6f6f;
+      line-height: 1;
+      padding: 0 8px;
+    }
+
+    .close-drawer:hover {
+      color: #000;
+    }
+
+    /* accordion menu inside drawer */
+    .mobile-nav-accordion {
+      list-style: none;
+      flex: 1;
+    }
+
+    .accordion-item {
+      margin-bottom: 8px;
+      border-bottom: 1px solid #f0f1f3;
+    }
+
+    .accordion-title {
+      width: 100%;
+      background: none;
+      border: none;
+      text-align: left;
+      padding: 14px 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #1e1e1e;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .accordion-title i {
+      color: #6f6f6f;
+      transition: transform 0.2s;
+    }
+
+    .accordion-item.active .accordion-title i {
+      transform: rotate(90deg);
+      color: #2557a7;
+    }
+
+    .accordion-content {
+      display: none;
+      padding: 4px 0 12px 8px;
+      list-style: none;
+    }
+
+    .accordion-item.active .accordion-content {
+      display: block;
+    }
+
+    .accordion-content li a {
+      display: block;
+      padding: 10px 0 10px 16px;
+      text-decoration: none;
+      color: #3a3a3a;
+      font-size: 0.98rem;
+      border-left: 2px solid transparent;
+      transition: 0.1s;
+    }
+
+    .accordion-content li a i {
+      margin-right: 12px;
+      width: 20px;
+      color: #2557a7;
+    }
+
+    .accordion-content li a:hover {
+      border-left-color: #2557a7;
+      background-color: #f5f8fe;
+      color: #2557a7;
+    }
+
+    /* static mobile links without dropdown (if any) */
+    .mobile-extra-links {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e5e8;
+    }
+
+    .mobile-extra-links a {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: #2d2d2d;
+      font-weight: 500;
+      padding: 12px 0;
+    }
+
+    .mobile-extra-links a i {
+      color: #2557a7;
+      width: 24px;
+    }
+
+    .mobile-post-btn {
+      background-color: #2557a7;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 24px 0 16px;
+    }
+
+    .mobile-signin {
+      font-weight: 600;
+      color: #2557a7;
+      text-decoration: none;
+      margin-left: 8px;
+    }
+
+    /* breakpoint: switch to mobile nav */
+    @media screen and (max-width: 900px) {
+      .nav-dropdowns,
+      .employer-link,
+      .post-job-btn,
+      .sign-in {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .navbar-left {
+        gap: 12px;
+      }
+    }
+
+    /* minor tweaks for very small */
+    @media screen and (max-width: 480px) {
+      .navbar {
+        padding: 0 12px;
+      }
+      .logo a {
+        font-size: 1.5rem;
+      }
+      .logo i {
+        font-size: 1.7rem;
+      }
+    }
+
+    /* dummy content */
+    .main-content {
+      max-width: 1300px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .demo-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      border: 1px solid #eaedf0;
+    }
+    .demo-card h4 { color: #2557a7; margin-bottom: 6px; }
+    .footer-note { text-align: center; margin-top: 60px; color: #6f6f6f; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <!-- Left side: logo + dropdown navigation (desktop) -->
+      <div class="navbar-left">
+        <div class="logo">
+          <a href="#">
+            <i class="fas fa-briefcase"></i><span>indeed</span>
+          </a>
+        </div>
+
+        <!-- desktop dropdown navigation – exactly like indeed's main categories -->
+        <ul class="nav-dropdowns">
+          <!-- Find jobs dropdown -->
+          <li class="dropdown">
+            <button class="dropbtn">Find jobs <i class="fas fa-chevron-down"></i></button>
+            <div class="dropdown-content">
+              <a href="#"><i class="fas fa-magnifying-glass"></i> Job search</a>
+              <a href="#"><i class="fas fa-upload"></i> Upload CV</a>
+              <a href="#"><i class="fas fa-bookmark"></i> Saved jobs</a>
+              <a href="#"><i class="fas fa-clock"></i> Recent searches</a>
+            </div>
+          </li>
+          <!-- Company reviews dropdown -->
+          <li class="dropdown">
+            <button class="dropbtn">Company reviews <i class="fas fa-chevron-down"></i></button>
+            <div class="dropdown-content">
+              <a href="#"><i class="fas fa-star"></i> Top companies</a>
+              <a href="#"><i class="fas fa-pen"></i> Write a review</a>
+              <a href="#"><i class="fas fa-chart-simple"></i> Salaries</a>
+              <a href="#"><i class="fas fa-building"></i> Explore by industry</a>
+            </div>
+          </li>
+          <!-- Find salaries (no dropdown? but we add subtle one) -->
+          <li class="dropdown">
+            <button class="dropbtn">Find salaries <i class="fas fa-chevron-down"></i></button>
+            <div class="dropdown-content">
+              <a href="#"><i class="fas fa-dollar-sign"></i> Salary calculator</a>
+              <a href="#"><i class="fas fa-chart-line"></i> Career guide</a>
+              <a href="#"><i class="fas fa-location-dot"></i> By city</a>
+            </div>
+          </li>
+          <!-- Employers dropdown (main one) -->
+          <li class="dropdown">
+            <button class="dropbtn">Employers <i class="fas fa-chevron-down"></i></button>
+            <div class="dropdown-content">
+              <a href="#"><i class="fas fa-bullhorn"></i> Post a job</a>
+              <a href="#"><i class="fas fa-users"></i> Employer branding</a>
+              <a href="#"><i class="fas fa-file-lines"></i> Resume search</a>
+              <a href="#"><i class="fas fa-hand-holding-dollar"></i> Pricing</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right side desktop elements -->
+      <div class="navbar-right">
+        <a href="#" class="employer-link">
+          <i class="fas fa-briefcase"></i> Employers / Post Job
+        </a>
+        <button class="post-job-btn">
+          <i class="fas fa-plus-circle"></i> Post Job
+        </button>
+        <a href="#" class="sign-in">Sign in</a>
+        <!-- Hamburger (mobile) -->
+        <button class="hamburger" id="hamburgerBtn" aria-label="menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- mobile drawer with accordion (dropdowns inside hamburger) -->
+  <div class="mobile-menu-overlay" id="mobileOverlay">
+    <div class="mobile-drawer">
+      <div class="drawer-header">
+        <span class="drawer-logo"><i class="fas fa-briefcase"></i> indeed</span>
+        <button class="close-drawer" id="closeDrawerBtn">&times;</button>
+      </div>
+
+      <!-- Accordion for mobile – matches desktop dropdowns -->
+      <ul class="mobile-nav-accordion">
+        <!-- Find jobs accordion -->
+        <li class="accordion-item">
+          <button class="accordion-title">Find jobs <i class="fas fa-chevron-right"></i></button>
+          <ul class="accordion-content">
+            <li><a href="#"><i class="fas fa-magnifying-glass"></i> Job search</a></li>
+            <li><a href="#"><i class="fas fa-upload"></i> Upload CV</a></li>
+            <li><a href="#"><i class="fas fa-bookmark"></i> Saved jobs</a></li>
+            <li><a href="#"><i class="fas fa-clock"></i> Recent searches</a></li>
+          </ul>
+        </li>
+        <!-- Company reviews accordion -->
+        <li class="accordion-item">
+          <button class="accordion-title">Company reviews <i class="fas fa-chevron-right"></i></button>
+          <ul class="accordion-content">
+            <li><a href="#"><i class="fas fa-star"></i> Top companies</a></li>
+            <li><a href="#"><i class="fas fa-pen"></i> Write a review</a></li>
+            <li><a href="#"><i class="fas fa-chart-simple"></i> Salaries</a></li>
+            <li><a href="#"><i class="fas fa-building"></i> Explore by industry</a></li>
+          </ul>
+        </li>
+        <!-- Find salaries accordion -->
+        <li class="accordion-item">
+          <button class="accordion-title">Find salaries <i class="fas fa-chevron-right"></i></button>
+          <ul class="accordion-content">
+            <li><a href="#"><i class="fas fa-dollar-sign"></i> Salary calculator</a></li>
+            <li><a href="#"><i class="fas fa-chart-line"></i> Career guide</a></li>
+            <li><a href="#"><i class="fas fa-location-dot"></i> By city</a></li>
+          </ul>
+        </li>
+        <!-- Employers accordion (main) -->
+        <li class="accordion-item">
+          <button class="accordion-title">Employers <i class="fas fa-chevron-right"></i></button>
+          <ul class="accordion-content">
+            <li><a href="#"><i class="fas fa-bullhorn"></i> Post a job</a></li>
+            <li><a href="#"><i class="fas fa-users"></i> Employer branding</a></li>
+            <li><a href="#"><i class="fas fa-file-lines"></i> Resume search</a></li>
+            <li><a href="#"><i class="fas fa-hand-holding-dollar"></i> Pricing</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <!-- extra mobile links (employer site / sign in) -->
+      <div class="mobile-extra-links">
+        <a href="#"><i class="fas fa-briefcase"></i> Employer site</a>
+        <a href="#"><i class="fas fa-right-to-bracket"></i> Sign in</a>
+      </div>
+
+      <button class="mobile-post-btn"><i class="fas fa-plus-circle"></i> Post a job</button>
+      <div style="font-size:0.9rem; color:#3d3d3d; margin-top: 20px;">
+        <span>New to Indeed? </span><a href="#" class="mobile-signin">Create account</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- page content (dummy) -->
+  <main class="main-content">
+    <h2 style="font-weight: 600;">Find your next opportunity</h2>
+    <p style="color:#3f3f3f; margin: 6px 0 16px;">Explore millions of jobs, company reviews, and salary insights.</p>
+    <div class="cards-grid">
+      <div class="demo-card"><h4>Software Engineer</h4> <p>Indeed · Remote · $140k</p></div>
+      <div class="demo-card"><h4>Product Designer</h4> <p>Atlassian · Hybrid · $130k</p></div>
+      <div class="demo-card"><h4>Data Analyst</h4> <p>Netflix · Los Gatos · $110k</p></div>
+      <div class="demo-card"><h4>Marketing Manager</h4> <p>Spotify · NYC · $125k</p></div>
+    </div>
+    <div class="footer-note">Responsive navbar with dropdowns + accordion — Indeed style</div>
+  </main>
+
+  <script>
+    (function() {
+      const hamburger = document.getElementById('hamburgerBtn');
+      const overlay = document.getElementById('mobileOverlay');
+      const closeBtn = document.getElementById('closeDrawerBtn');
+
+      // open drawer
+      hamburger.addEventListener('click', () => {
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+
+      // close drawer by X
+      closeBtn.addEventListener('click', () => {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+
+      // close when clicking on background overlay
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+
+      // close on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) {
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+
+      // Accordion functionality for mobile (dropdowns inside drawer)
+      const accordionItems = document.querySelectorAll('.accordion-item');
+
+      accordionItems.forEach(item => {
+        const titleBtn = item.querySelector('.accordion-title');
+        titleBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          // close other accordions? we keep independent (but you can modify)
+          // toggle active class on clicked item
+          item.classList.toggle('active');
+        });
+      });
+
+      // optional: close drawer if window resized above mobile breakpoint
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (window.innerWidth > 900 && overlay.classList.contains('active')) {
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+          }
+        }, 150);
+      });
+
+      // initially set first accordion open? (optional, but we leave none open)
+      // we want clean start. User clicks to open.
+    })();
+  </script>
+</body>
+</html>

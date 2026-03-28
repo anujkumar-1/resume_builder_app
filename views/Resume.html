@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Responsive Navbar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/js/config.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
     <link rel="stylesheet" href="./styles/resume.css">
 </head>
@@ -229,13 +230,7 @@
                     </div>
                     <div class="section-content">
                         <div class="skills-list">
-                            <span class="skill-tag">HTML</span>
-                            <span class="skill-tag">CSS</span>
-                            <span class="skill-tag">JavaScript</span>
-                            <span class="skill-tag">React</span>
-                            <span class="skill-tag">Node.js</span>
-                            <span class="skill-tag">Git</span>
-                            <span class="skill-tag">Responsive Design</span>
+                            
                         </div>
                     </div>
                 </div>
@@ -265,22 +260,25 @@
 
                 <!-- expericence section -->
                 <div class="resume-section" id="experienceSection">
-                    <div class="move-buttons">
-                        <button class="move-btn move-up-btn" data-section="experienceSection">
-                            <i class="fas fa-arrow-up"></i>
-                        </button>
-                        <button class="move-btn move-down-btn" data-section="experienceSection">
-                            <i class="fas fa-arrow-down"></i>
-                        </button>
-                    </div>
-                    <div class="section-header">
-                        <h2 class="section-title">Experience</h2>
-                        <div class="section-actions">
-                            <button class="section-action-btn add-btn" data-section="experience">
-                                <i class="fas fa-plus"></i> Add
+                    <div id="experienceDemo">
+                        <div class="move-buttons">
+                            <button class="move-btn move-up-btn" data-section="experienceSection">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button class="move-btn move-down-btn" data-section="experienceSection">
+                                <i class="fas fa-arrow-down"></i>
                             </button>
                         </div>
+                        <div class="section-header">
+                            <h2 class="section-title">Experience</h2>
+                            <div class="section-actions">
+                                <button class="section-action-btn add-btn" data-section="experience">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                  
                     <div class="section-content">
                         
                         
@@ -722,32 +720,31 @@ Outstanding Academic Achievement - State University (2015)</textarea>
                 <h3 class="modal-title">Select a Template</h3>
                 <button class="modal-close" id="closeTemplatesModal">&times;</button>
             </div>
-            <div class="templates-grid">
-                <div class="template-card">
-                    <div class="template-image">
-                        <i class="fas fa-file-alt" style="font-size: 3rem;"></i>
+            <div class="templates-grid" id="templates-grid"> 
+
+                   <!-- color gradient -->
+
+                   <div id="color-gradient" class="color-gradient">
+                        <!-- color picker -->
+                         
+                   </div>
+
+                    <div class="template-card modern-theme">
+                        <input type="radio" name="template-picker" id="modern" value="modern">
+                        <label for="modern"></label>
+                        <img src="/Assets/two-column-color.jpg" alt="Modern template with sidebar colored" srcset="">
+                        <p>Modern Template</p>
                     </div>
-                    <div class="template-name">Professional</div>
-                </div>
-                <div class="template-card">
-                    <div class="template-image">
-                        <i class="fas fa-briefcase" style="font-size: 3rem;"></i>
-                    </div>
-                    <div class="template-name">Modern</div>
-                </div>
-                <div class="template-card">
-                    <div class="template-image">
-                        <i class="fas fa-paint-brush" style="font-size: 3rem;"></i>
-                    </div>
-                    <div class="template-name">Creative</div>
-                </div>
-                <div class="template-card">
-                    <div class="template-image">
-                        <i class="fas fa-laptop-code" style="font-size: 3rem;"></i>
-                    </div>
-                    <div class="template-name">Technical</div>
-                </div>
+
+
+                    <div class="template-card classic-theme">
+                        <input type="radio" name="template-picker" id="classic" value="classic">
+                        <label for="classic"></label>
+                        <img src="/Assets/classic.jpg" alt="Modern template with sidebar colored" srcset="">
+                        <p>Classic Template</p>
+                    </div>                    
             </div>
+
             <div class="form-actions" style="margin-top: 20px;">
                 <button type="button" class="btn btn-outline" id="cancelTemplates">Cancel</button>
                 <button type="button" class="btn btn-primary" id="applyTemplate">Apply Template</button>
@@ -829,8 +826,10 @@ Outstanding Academic Achievement - State University (2015)</textarea>
     </div>
 
 
+    <div>
+        
+    </div>
 
-
-    <script src="./js/resume.js"></script>
+    <script src="/js/resume.js"></script>
 </body>
 </html>

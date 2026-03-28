@@ -1,6 +1,6 @@
 import Resume from "../models/resumeBuilder.js"
 import User from "../models/user.js"
-import { v4 as uuidv4 } from "uuid";
+import crypto from 'node:crypto';
 import {generateAndUploadResume} from "./helpers.js"
 
 export const updateContactInfo = async (req, res) => {
@@ -501,7 +501,7 @@ export const updateEditEducation = async (req, res)=>{
 
 export const downloadResume = async (req, res) => {
     try {
-        const uuid = uuidv4();
+        const uuid = crypto.randomUUID();
         // name
         const filename = `Resume-${req.user.name}-${uuid}.pdf`;
 

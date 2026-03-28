@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indeed Resume · manage + templates + popups</title>
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: #f1f4f8;
+      padding: 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* main container – responsive card style */
+    .resume-manager {
+      max-width: 1400px;
+      width: 100%;
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 12px 40px rgba(0, 20, 50, 0.1);
+      padding: 32px 28px;
+      margin: 20px 0;
+      border: 1px solid #e6eaf0;
+    }
+
+    /* headings */
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .section-title i {
+      font-size: 2rem;
+      color: #2557a7;
+      background: #e9edf6;
+      padding: 12px;
+      border-radius: 16px;
+    }
+    .section-title h2 {
+      font-weight: 650;
+      font-size: 1.9rem;
+      color: #0b2549;
+      letter-spacing: -0.02em;
+    }
+
+    /* flex row for two columns: left (manage) + right (templates) */
+    .dashboard-grid {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .manage-column {
+      flex: 2;
+      min-width: 320px;
+    }
+
+    .templates-column {
+      flex: 1.2;
+      min-width: 280px;
+    }
+
+    /* ---------- MANAGE SECTION (resume fields) ---------- */
+    .resume-fields-card {
+      background: #fafcff;
+      border-radius: 24px;
+      padding: 24px;
+      border: 1px solid #dde3ed;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .field-group {
+      margin-bottom: 22px;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #1e2f44;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+    .field-label i {
+      color: #2557a7;
+      width: 22px;
+    }
+
+    input, textarea, .fake-select {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1.5px solid #d4dcec;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      background: white;
+      transition: 0.15s;
+      outline: none;
+    }
+    input:focus, textarea:focus {
+      border-color: #2557a7;
+      box-shadow: 0 0 0 3px rgba(37,87,167,0.15);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .row-duo {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .row-duo > div {
+      flex: 1 1 160px;
+    }
+
+    /* action buttons inside manage */
+    .manage-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+      border-top: 1px solid #e2e8f2;
+      padding-top: 24px;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      transition: 0.15s;
+      background: white;
+      border: 1.5px solid #cad2e0;
+    }
+    .btn-primary {
+      background: #2557a7;
+      border: 1.5px solid #2557a7;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #1a4380;
+    }
+    .btn-outline:hover {
+      background: #f0f5ff;
+      border-color: #2557a7;
+    }
+
+    /* ---------- TEMPLATES COLUMN ---------- */
+    .templates-card {
+      background: #fafcff;
+      border-radius: 24px;
+      padding: 20px 16px;
+      border: 1px solid #dde3ed;
+      height: fit-content;
+    }
+
+    .template-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin: 18px 0 24px;
+    }
+
+    .template-item {
+      background: white;
+      border-radius: 20px;
+      padding: 16px 10px 12px;
+      border: 1.5px solid #e1e7f0;
+      text-align: center;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .template-item:hover {
+      border-color: #2557a7;
+      transform: scale(1.01);
+      box-shadow: 0 8px 18px rgba(0,40,100,0.08);
+    }
+    .template-item.active {
+      border-color: #2557a7;
+      background: #edf3ff;
+    }
+
+    .template-preview {
+      height: 100px;
+      background: linear-gradient(145deg, #f0f4fe, #ffffff);
+      border-radius: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #a0b8d4;
+      color: #3a5670;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    .template-preview i {
+      font-size: 2rem;
+      color: #3f6ab3;
+      opacity: 0.8;
+    }
+    .template-name {
+      font-weight: 600;
+      color: #172f4b;
+    }
+
+    /* download button */
+    .download-section {
+      margin-top: 8px;
+    }
+    .btn-download {
+      width: 100%;
+      padding: 16px;
+      border-radius: 40px;
+      background: #1e3f6e;
+      border: none;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.15s;
+      border: 1px solid #1e3f6e;
+    }
+    .btn-download:hover {
+      background: #0f2b4f;
+    }
+
+    /* ----- popup modal (mobile/tablet) ----- */
+    .popup-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      visibility: hidden;
+      opacity: 0;
+      transition: 0.2s ease;
+      padding: 16px;
+    }
+    .popup-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .popup-content {
+      background: white;
+      max-width: 500px;
+      width: 100%;
+      border-radius: 40px;
+      padding: 28px 24px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+      max-height: 85vh;
+      overflow-y: auto;
+      transform: scale(0.98);
+      transition: transform 0.2s;
+    }
+    .popup-overlay.active .popup-content {
+      transform: scale(1);
+    }
+
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .popup-header h3 {
+      font-size: 1.8rem;
+      font-weight: 650;
+      color: #10233e;
+    }
+    .close-popup {
+      background: none;
+      border: none;
+      font-size: 2.5rem;
+      cursor: pointer;
+      color: #6b7a94;
+      line-height: 1;
+    }
+
+    /* popup templates grid */
+    .popup-templates-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin: 18px 0;
+    }
+    .popup-template-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 16px 6px;
+      text-align: center;
+      background: #f9fcff;
+    }
+    .popup-template-card .preview-box {
+      height: 90px;
+      background: #eef3fd;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .popup-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .popup-actions button {
+      flex: 1;
+    }
+
+    /* responsive show/hide popup triggers */
+    .trigger-mobile {
+      display: none; /* hidden by default (desktop) */
+    }
+
+    /* on small screens, hide native manage buttons and show "edit resume" triggers */
+    @media screen and (max-width: 900px) {
+      .dashboard-grid {
+        flex-direction: column;
+      }
+      /* hide desktop manage buttons inside .manage-actions (they will be replaced by popup) */
+      .manage-actions .btn {
+        display: none;
+      }
+      .trigger-mobile {
+        display: flex;  /* shows the mobile trigger button */
+        width: 100%;
+      }
+      .btn.trigger-mobile {
+        display: flex;
+        background: #2557a7;
+        color: white;
+        border: none;
+        padding: 16px;
+        font-size: 1.1rem;
+      }
+      /* also hide the whole templates column? no, but we add a popup trigger there too */
+      .templates-card .template-gallery,
+      .templates-card .btn-outline {
+        display: none; /* hide desktop template gallery */
+      }
+      .template-popup-trigger {
+        display: flex !important;
+        margin-top: 12px;
+      }
+      .btn-download {
+        margin-top: 12px;
+      }
+    }
+
+    /* extra: template popup trigger appears only on mobile/tablet */
+    .template-popup-trigger {
+      display: none;
+      width: 100%;
+    }
+
+    /* small adjustments */
+    @media screen and (max-width: 480px) {
+      .resume-manager { padding: 20px 16px; }
+      .popup-content { padding: 20px; }
+    }
+
+    /* misc */
+    hr { border: 0.5px solid #eef3f8; margin: 16px 0; }
+  </style>
+</head>
+<body>
+
+<div class="resume-manager">
+  <!-- HEADER -->
+  <div class="section-title">
+    <i class="fas fa-file-pen"></i>
+    <h2>Resume & application</h2>
+  </div>
+
+  <!-- GRID: left manage + right templates -->
+  <div class="dashboard-grid">
+    
+    <!-- LEFT: MANAGE SECTION (resume fields) -->
+    <div class="manage-column">
+      <div class="resume-fields-card">
+        <div class="field-group">
+          <div class="field-label"><i class="fas fa-user"></i> Full name</div>
+          <input type="text" placeholder="e.g. Jordan Smith" value="Alex Johnson">
+        </div>
+
+        <div class="row-duo">
+          <div>
+            <div class="field-label"><i class="fas fa-envelope"></i> Email</div>
+            <input type="email" value="alex.j@example.com">
+          </div>
+          <div>
+            <div class="field-label"><i class="fas fa-phone"></i> Phone</div>
+            <input type="tel" value="+1 (555) 234-5678">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label"><i class="fas fa-location-dot"></i> Location</div>
+          <input type="text" value="San Francisco, CA">
+        </div>
+
+        <div class="field-group">
+          <div class="field-label"><i class="fas fa-briefcase"></i> Work experience</div>
+          <textarea>Senior Frontend Developer · 2020–present
+Designed responsive components, led UI redesign.</textarea>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label"><i class="fas fa-graduation-cap"></i> Education</div>
+          <input type="text" value="B.Sc. Computer Science, SFSU">
+        </div>
+
+        <div class="field-group">
+          <div class="field-label"><i class="fas fa-code"></i> Skills</div>
+          <input type="text" value="JavaScript, React, CSS, Figma">
+        </div>
+
+        <!-- desktop manage buttons (hidden on mobile, replaced by popup) -->
+        <div class="manage-actions">
+          <button class="btn btn-primary"><i class="fas fa-save"></i> Save changes</button>
+          <button class="btn btn-outline"><i class="fas fa-cloud-arrow-up"></i> Upload new</button>
+          <!-- mobile trigger button (visible only small screens) -->
+          <button class="btn btn-primary trigger-mobile" id="openManagePopupBtn"><i class="fas fa-pen-to-square"></i> Edit resume fields</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: TEMPLATES COLUMN -->
+    <div class="templates-column">
+      <div class="templates-card">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <i class="fas fa-palette" style="color:#2557a7; font-size: 1.4rem;"></i>
+          <h3 style="color: #10233e;">Choose template</h3>
+        </div>
+
+        <!-- desktop gallery (hidden on mobile) -->
+        <div class="template-gallery">
+          <div class="template-item active">
+            <div class="template-preview"><i class="fas fa-file-lines"></i></div>
+            <span class="template-name">Modern</span>
+          </div>
+          <div class="template-item">
+            <div class="template-preview"><i class="fas fa-file"></i></div>
+            <span class="template-name">Minimal</span>
+          </div>
+          <div class="template-item">
+            <div class="template-preview"><i class="fas fa-file-pdf"></i></div>
+            <span class="template-name">Professional</span>
+          </div>
+          <div class="template-item">
+            <div class="template-preview"><i class="fas fa-clipboard"></i></div>
+            <span class="template-name">Creative</span>
+          </div>
+        </div>
+
+        <!-- desktop secondary button (hidden on mobile) -->
+        <button class="btn btn-outline" style="width:100%; margin: 8px 0 16px;"><i class="fas fa-expand"></i> Preview all</button>
+
+        <!-- mobile trigger button for templates popup (appears only small screens) -->
+        <button class="btn btn-primary template-popup-trigger" id="openTemplatePopupBtn"><i class="fas fa-table-cells-large"></i> Browse templates</button>
+
+        <!-- download button (visible on all) -->
+        <div class="download-section">
+          <button class="btn-download"><i class="fas fa-file-pdf"></i> Download resume</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== POPUP FOR MANAGE SECTION (mobile/tablet) ========== -->
+<div class="popup-overlay" id="managePopup">
+  <div class="popup-content">
+    <div class="popup-header">
+      <h3><i class="fas fa-pen" style="margin-right: 10px;"></i>Edit resume</h3>
+      <button class="close-popup" id="closeManagePopup">&times;</button>
+    </div>
+    <!-- condensed fields for mobile -->
+    <div class="field-group">
+      <div class="field-label"><i class="fas fa-user"></i> Full name</div>
+      <input type="text" value="Alex Johnson">
+    </div>
+    <div class="row-duo">
+      <div><div class="field-label">Email</div><input type="email" value="alex.j@example.com"></div>
+      <div><div class="field-label">Phone</div><input type="tel" value="+1 (555) 234-5678"></div>
+    </div>
+    <div class="field-group">
+      <div class="field-label"><i class="fas fa-location-dot"></i> Location</div>
+      <input type="text" value="San Francisco, CA">
+    </div>
+    <div class="field-group">
+      <div class="field-label"><i class="fas fa-briefcase"></i> Work experience</div>
+      <textarea>Senior Frontend Developer · 2020–present Designed responsive components, led UI redesign.</textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label"><i class="fas fa-graduation-cap"></i> Education</div>
+      <input type="text" value="B.Sc. Computer Science, SFSU">
+    </div>
+    <div class="field-group">
+      <div class="field-label"><i class="fas fa-code"></i> Skills</div>
+      <input type="text" value="JavaScript, React, CSS, Figma">
+    </div>
+    <div class="popup-actions">
+      <button class="btn btn-primary" style="flex:2;"><i class="fas fa-check"></i> Done</button>
+      <button class="btn btn-outline" style="flex:1;"><i class="fas fa-xmark"></i> Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== POPUP FOR TEMPLATES (mobile/tablet) ========== -->
+<div class="popup-overlay" id="templatePopup">
+  <div class="popup-content">
+    <div class="popup-header">
+      <h3><i class="fas fa-palette"></i> Templates</h3>
+      <button class="close-popup" id="closeTemplatePopup">&times;</button>
+    </div>
+    <div class="popup-templates-grid">
+      <div class="popup-template-card active">
+        <div class="preview-box"><i class="fas fa-file-lines fa-2x"></i></div>
+        <span>Modern</span>
+      </div>
+      <div class="popup-template-card">
+        <div class="preview-box"><i class="fas fa-file fa-2x"></i></div>
+        <span>Minimal</span>
+      </div>
+      <div class="popup-template-card">
+        <div class="preview-box"><i class="fas fa-file-pdf fa-2x"></i></div>
+        <span>Professional</span>
+      </div>
+      <div class="popup-template-card">
+        <div class="preview-box"><i class="fas fa-clipboard fa-2x"></i></div>
+        <span>Creative</span>
+      </div>
+    </div>
+    <div class="popup-actions">
+      <button class="btn btn-primary"><i class="fas fa-download"></i> Download selected</button>
+      <button class="btn btn-outline closeTemplateCancel">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ----- popup elements -----
+    const managePopup = document.getElementById('managePopup');
+    const templatePopup = document.getElementById('templatePopup');
+
+    // manage popup triggers
+    const openManageBtn = document.getElementById('openManagePopupBtn');
+    const closeManageBtn = document.getElementById('closeManagePopup');
+    // template popup triggers
+    const openTemplateBtn = document.getElementById('openTemplatePopupBtn');
+    const closeTemplateBtn = document.getElementById('closeTemplatePopup');
+    // optional cancel inside template popup
+    const closeTemplateCancel = document.querySelector('.closeTemplateCancel');
+
+    // open manage popup
+    if (openManageBtn) {
+      openManageBtn.addEventListener('click', () => {
+        managePopup.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    }
+    // close manage popup
+    const closeManage = () => {
+      managePopup.classList.remove('active');
+      document.body.style.overflow = '';
+    };
+    if (closeManageBtn) closeManageBtn.addEventListener('click', closeManage);
+    // click outside to close manage
+    managePopup.addEventListener('click', (e) => {
+      if (e.target === managePopup) closeManage();
+    });
+
+    // open template popup
+    if (openTemplateBtn) {
+      openTemplateBtn.addEventListener('click', () => {
+        templatePopup.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    }
+    // close template popup (multiple ways)
+    const closeTemplate = () => {
+      templatePopup.classList.remove('active');
+      document.body.style.overflow = '';
+    };
+    if (closeTemplateBtn) closeTemplateBtn.addEventListener('click', closeTemplate);
+    if (closeTemplateCancel) closeTemplateCancel.addEventListener('click', closeTemplate);
+    templatePopup.addEventListener('click', (e) => {
+      if (e.target === templatePopup) closeTemplate();
+    });
+
+    // close on Escape key for both
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (managePopup.classList.contains('active')) closeManage();
+        if (templatePopup.classList.contains('active')) closeTemplate();
+      }
+    });
+
+    // optional: if window resizes above 900px, auto close popups (better UX)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (window.innerWidth > 900) {
+          if (managePopup.classList.contains('active')) closeManage();
+          if (templatePopup.classList.contains('active')) closeTemplate();
+        }
+      }, 150);
+    });
+  })();
+</script>
+<!-- dummy note: all popups behave as required for mobile/tablet, and desktop shows inline fields -->
+</body>
+</html>
