@@ -84,6 +84,7 @@ export const updateExperience = async (req, res) => {
 export const updateSkills = async (req, res) => {
     try {
         const skill = req.body.skill
+
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
 
         if (userAlreadyExist.length >0) {
@@ -183,7 +184,6 @@ export const updateSummary = async (req, res) => {
 export const updateLanguages = async (req, res) => {
     try {
         const {language} = req.body
-
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
 
         if (userAlreadyExist.length >0) {
@@ -191,9 +191,7 @@ export const updateLanguages = async (req, res) => {
                 { user: req.user.userId },
                 {
                     $set: {
-                    languages: {
-                        name: language
-                    }
+                        languages:language
                     }
                 },
                 { new: true }
@@ -202,9 +200,7 @@ export const updateLanguages = async (req, res) => {
         }
         else{
             const data = await Resume.create({user: req.user.userId,
-                languages: {
-                    name: language
-                }
+                languages: language
             })
             
             res.status(201).json({data})
@@ -226,9 +222,7 @@ export const updateCertificates = async (req, res) => {
                 { user: req.user.userId },
                 {
                     $set: {
-                    certificates: {
-                       name: certificate 
-                    }
+                        certificates:  certificate 
                     }
                 },
                 { new: true }
@@ -237,9 +231,7 @@ export const updateCertificates = async (req, res) => {
         }
         else{
             const data = await Resume.create({user: req.user.userId,
-                certificates: {
-                    name: certificate
-                }
+                certificates: certificate
             })
             
             res.status(201).json({data})

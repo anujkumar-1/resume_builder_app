@@ -24,21 +24,9 @@ const resumeSchema = new mongoose.Schema({
     year: String,
     educationId: String
   }],
-  skills: String, // Single string value
-  languages: { // Single object
-    name: String,
-    proficiency: {
-      type: String,
-      enum: ['Basic', 'Intermediate', 'Fluent', 'Native'],
-    }
-  },
-  certificates: { // Single object
-    name: String,
-    issuer: String,
-    date: String,
-    credentialId: String,
-    url: String
-  },
+  skills: [String], // Single string value
+  languages: [String],
+  certificates: [String],
   awards: { // Single object
     title: String,
     issuer: String,

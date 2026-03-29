@@ -283,13 +283,13 @@ window.addEventListener("DOMContentLoaded", async (e) => {
     }
 
     if(user.data.resumeInfo[0].certificates){
-        updateCertificatesInfoResume(user.data.resumeInfo[0].certificates.name)
+        updateCertificatesInfoResume(user.data.resumeInfo[0].certificates)
     }
     if(user.data.resumeInfo[0].awards){
         updateAwardsInfoResume(user.data.resumeInfo[0].awards.title)
     }
     if(user.data.resumeInfo[0].languages){
-        updateLangauageInfoResume(user.data.resumeInfo[0].languages.name)
+        updateLangauageInfoResume(user.data.resumeInfo[0].languages)
     }
     if(user.data.resumeInfo[0].intrests){
         updateIntrestInfoResume(user.data.resumeInfo[0].intrests)
@@ -345,11 +345,9 @@ function updateSkillInfoResume(response){
     // skills section
 
     if(response!=null){
-        const skills = response.split(',').map(skill => skill.trim());
-            
         const skillsList = document.querySelector('.skills-list');
-            skillsList.innerHTML = '';
-        skills.forEach(skill => {
+        skillsList.innerHTML = '';
+        response.forEach(skill => {
                 if (skill) {
                     const skillTag = document.createElement('span');
                     skillTag.className = 'skill-tag';
@@ -386,8 +384,6 @@ function updateSummaryInfoResume(response){
 
 
 function updateCertificatesInfoResume(response){
-    const certificates = response.split('\n').filter(cert => cert.trim());
-
     if( response){
         let obj ={
             certificate: response
@@ -397,7 +393,7 @@ function updateCertificatesInfoResume(response){
         const certificatesList = document.getElementById('certificatesList');
         certificatesList.innerHTML = '';
 
-        certificates.forEach(cert => {
+        response.forEach(cert => {
             if (cert) {
                 const li = document.createElement('li');
                 li.textContent = cert;
@@ -414,14 +410,13 @@ function updateCertificatesInfoResume(response){
 
 
 function updateLangauageInfoResume(response){
-    const languages = response.split(',').map(lang => lang.trim());
     if( response){
         resumePreview.insertAdjacentHTML('beforeend', sectionTemplates.languages);
         const languagesList = document.getElementById('languagesList');
         languagesList.innerHTML = '';
             
             
-        languages.forEach(lang => {
+        response.forEach(lang => {
             if (lang) {
                 const langTag = document.createElement('span');
                 langTag.className = 'skill-tag';
@@ -444,6 +439,7 @@ function updateLangauageInfoResume(response){
 
 function updateAwardsInfoResume(response){
     const awards = response.split('\n').filter(award => award.trim());
+    console.log(awards, response)
     if( response){
         resumePreview.insertAdjacentHTML('beforeend', sectionTemplates.awards);
         const awardsList = document.getElementById('awardsList');
@@ -1225,6 +1221,8 @@ async function updateExperience() {
 async function updateSkills() {
     const skillsInput = document.getElementById('skillsInput').value;
     const skills = skillsInput.split(',').map(skill => skill.trim());
+    console.log(skillsInput.split(","))
+
     const skillsList = document.querySelector('.skills-list');
     skillsList.innerHTML = '';
     
@@ -1239,7 +1237,7 @@ async function updateSkills() {
 
 
     let obj = {
-        skill: skillsInput
+        skill: skills
     }
     let token = localStorage.getItem("token")
 
@@ -1322,6 +1320,7 @@ async function updateSummary() {
 
 async function updateLanguages() {
     const languagesInput = document.getElementById('languagesInput').value;
+    console.log(languagesInput)
     const languages = languagesInput.split(',').map(lang => lang.trim());
     const languagesList = document.getElementById('languagesList');
     languagesList.innerHTML = '';
@@ -1336,7 +1335,7 @@ async function updateLanguages() {
     });
 
     let obj = {
-        language: languagesInput
+        language: languages
     }
     let token = localStorage.getItem("token")
 
@@ -1346,7 +1345,8 @@ async function updateLanguages() {
 async function updateCertificates() {
     const certificatesInput = document.getElementById('certificatesInput').value;
     const certificates = certificatesInput.split('\n').filter(cert => cert.trim());
-    
+    console.log(certificates)
+
     const certificatesList = document.getElementById('certificatesList');
     certificatesList.innerHTML = '';
     
@@ -1359,7 +1359,7 @@ async function updateCertificates() {
     });
 
     let obj = {
-        certificate: certificatesInput
+        certificate: certificates
     }
     let token = localStorage.getItem("token")
 
@@ -1672,6 +1672,7 @@ async function downloadResume() {
     try {
         const token = localStorage.getItem("token")
         const resume = await axios.get(`${API_URL}/resume/downloadResume`, {headers:{Authorization: token}})
+        console.log(resume)
     } catch (error) {
     }
     // In a real application, you would generate a PDF here
