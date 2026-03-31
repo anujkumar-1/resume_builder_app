@@ -27,15 +27,8 @@ const resumeSchema = new mongoose.Schema({
   skills: [String], // Single string value
   languages: [String],
   certificates: [String],
-  awards: { // Single object
-    title: String,
-    issuer: String,
-    date: String,
-    description: String
-  },
-
-  intrests:String,
-
+  awards: [String],
+  intrests: String,
   projects: [{ // Array of experiences
     title: String,
     description: String,
