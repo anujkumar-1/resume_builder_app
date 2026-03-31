@@ -11,18 +11,19 @@ export const forgetPassword = async(req, res)=>{
         const {email} = req.body
         const verifiedEmail = validateEmail(email)
         if(!verifiedEmail){
-            res.status(422).json({success: false, message: "Invalid Email"})
+            res.status(422).json({success: false, message: "Invalid Email Address"})
         }
         console.log(1)
         const userAlreadyExist = await User.find({ email: email });
         console.log(userAlreadyExist)
         if(!userAlreadyExist){
-            res.status(404).json({success: false, message: "User not found"})
+            res.status(404).json({success: false, message: "User not found, try again"})
         }
         const id = crypto.randomUUID();
         console.log(id, req.user.userId)
         const response = await ForgetPassword.insertOne({uid: id, userId: req.user.userId, isActive: true})
         console.log(response)
+        
         const msg = await sendEmail(id);
         res.status(200).json({success: true, message: msg})
     } catch (error) {
