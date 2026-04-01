@@ -153,11 +153,10 @@ class BaseResumeTemplate {
 }
 
 // ==================== TWO COLUMN MODERN TEMPLATE (FIXED) ====================
-
 class TwoColumnModernTemplate extends BaseResumeTemplate {
     constructor(config = {}) {
         super(config);
-        this.leftColWidth = 200;
+        this.leftColWidth = 180;  // Changed from 200 to 180
         this.leftColX = this.margins.left;
         this.rightColX = this.leftColX + this.leftColWidth + 20;
         this.rightColWidth = this.pageWidth - this.rightColX - this.margins.right;
@@ -277,6 +276,11 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             this.rightColY = this.drawProjects(data.projects, this.rightColX, this.rightColY);
         }
         
+        // ===== AWARDS SECTION (Before References) =====
+        if (data.awards && data.awards.length) {
+            this.rightColY = this.drawAwards(data.awards, this.rightColX, this.rightColY);
+        }
+        
         this.rightColY = this.drawReferences(data.references, this.rightColX, this.rightColY);
     }
 
@@ -332,18 +336,18 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             this.doc.image(iconPath, x, y, { width: 10 });
             // Value (with proper wrapping)
             const valueHeight = this.calculateTextHeight(item.value, {
-                width: this.leftColWidth - 30,
-                fontSize: 9,
+                width: this.leftColWidth - 1,
+                fontSize: 10,
                 lineGap: 2
 
             });
             
             this.doc
                 .fillColor(this.config.colors.text)
-                .fontSize(9)
+                .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(item.value, x + 20, y + 3, {
-                    width: this.leftColWidth - 30
+                    width: this.leftColWidth - 1
                 });
             
             y += Math.max(18, valueHeight + 2);
@@ -427,7 +431,7 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         
         y += 20;  
 
-        const colWidth = this.leftColWidth - 30; 
+        const colWidth = this.leftColWidth; 
         const bulletWidth = this.doc.widthOfString('• ');  
 
         skills.forEach((skill, index) => {
@@ -465,9 +469,6 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         y += 20;
         return y;
     }
-
-
-
 
     drawLanguages(languages, x, startY) {
         let y = startY;
@@ -523,10 +524,10 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             
             this.doc
                 .fillColor(this.config.colors.text)
-                .fontSize(8)
+                .fontSize(9)
                 .font(this.config.fonts.body)
                 .text(`• ${cert}`, x + 5, y, {
-                    width: this.leftColWidth - 30
+                    width: this.leftColWidth - 1
                 });
             
             y += 12;
@@ -686,6 +687,58 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         return y;
     }
 
+    drawAwards(awards, x, startY) {
+        let y = startY;
+        
+        // Section title
+        this.doc
+            .fillColor(this.config.colors.primary)
+            .fontSize(16)
+            .font(this.config.fonts.header)
+            .text('AWARDS', x, y);
+        
+        y += 25;
+        
+        awards.forEach((award) => {
+            // Calculate height for this award
+            const awardHeight = this.calculateTextHeight(`• ${award}`, {
+                width: this.rightColWidth - 20,
+                fontSize: 10,
+                lineGap: 2
+            });
+            
+            // Check page break
+            if (y + awardHeight + 10 > this.pageHeight - this.margins.bottom) {
+                this.addNewPage();
+                y = this.margins.top;
+                // Redraw title on new page
+                this.doc
+                    .fillColor(this.config.colors.primary)
+                    .fontSize(16)
+                    .font(this.config.fonts.header)
+                    .text('AWARDS', x, y);
+                y += 25;
+            }
+            
+            // Award entry with bullet point
+            this.doc
+                .fillColor(this.config.colors.text)
+                .fontSize(10)
+                .font(this.config.fonts.body)
+                .text(`• ${award}`, x + 10, y, {
+                    width: this.rightColWidth - 20,
+                    lineGap: 2
+                });
+            
+            y += awardHeight + 8;
+        });
+        
+        // Add spacing after awards section
+        y += 10;
+        
+        return y;
+    }
+
     drawReferences(references, x, startY) {
         let y = startY;
         
@@ -744,7 +797,6 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         return y;
     }
 }
-
 // ==================== SINGLE COLUMN CLASSIC TEMPLATE (FIXED) ====================
 
 class SingleColumnClassicTemplate extends BaseResumeTemplate {
@@ -1356,7 +1408,9 @@ const sampleData = {
         'Leadership', 'Effective Communication', 'Critical Thinking', 'Strategic Planning',
         'Budget Management', 'Team Leadership', 'Market Analysis', 'Content Strategy',
         'SEO Optimization', 'Social Media Marketing', 'Email Campaigns', 'Analytics',
-        'CRM Software', 'Adobe Creative Suite', 'Microsoft Office', 'Google Analytics'
+        'CRM Software', 'Adobe Creative Suite', 'Microsoft Office', 'Google Analytics',
+         'Team Leadership', 'Market Analysis', 'Content Strategy',
+       
     ],
     languages: [
         'English (Fluent)', 'French (Fluent)', 'German (Basics)', 'Spanish (Intermediate)',
@@ -1366,6 +1420,16 @@ const sampleData = {
         'Google Analytics Certified', 'HubSpot Content Marketing',
         'Project Management Professional (PMP)', 'Digital Marketing Certification',
         'SEO Mastery Course', 'Social Media Strategy', 'Email Marketing Certification'
+    ],
+
+    awards:[
+        "Employee of the Month - Tech Solutions Inc. (June 2021)",
+        "Best Web Design - State University Hackathon (2016)",
+        "Outstanding Academic Achievement - State University (2015)",
+        "Employee of the Month - Tech Solutions Inc. (June 2021)",
+        "Best Web Design - State University Hackathon (2016)",
+        "Outstanding Academic Achievement - State University (2015)"
+
     ],
     projects: [
         {
@@ -1382,7 +1446,22 @@ const sampleData = {
             name: 'Social Media Campaign',
             description: 'Developed viral social media campaign reaching 1M+ users.',
             technologies: 'Meta Business Suite, Hootsuite'
-        }
+        },
+        {
+            name: 'Brand Redesign 2024',
+            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
+            technologies: 'Adobe Creative Suite, Figma'
+        },
+        {
+            name: 'Brand Redesign 2024',
+            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
+            technologies: 'Adobe Creative Suite, Figma'
+        },
+        {
+            name: 'Brand Redesign 2024',
+            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
+            technologies: 'Adobe Creative Suite, Figma'
+        },
     ],
     experience: [
         {
