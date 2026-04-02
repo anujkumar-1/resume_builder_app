@@ -1,6 +1,6 @@
 import PDFDocument from 'pdfkit'
 import fs  from 'fs'
-
+import path from 'path'
 // ==================== BASE CONFIGURATION ====================
 
 const BASE_CONFIG = {
@@ -8,8 +8,8 @@ const BASE_CONFIG = {
     margins: {
         left: 25,
         right: 25,
-        top: 35,
-        bottom: 35
+        top: 30,
+        bottom: 30
     },
     colors: {
         primary: '#2C3E50',
@@ -153,11 +153,10 @@ class BaseResumeTemplate {
 }
 
 // ==================== TWO COLUMN MODERN TEMPLATE (FIXED) ====================
-
 class TwoColumnModernTemplate extends BaseResumeTemplate {
     constructor(config = {}) {
         super(config);
-        this.leftColWidth = 200;
+        this.leftColWidth = 180;  // Changed from 200 to 180
         this.leftColX = this.margins.left;
         this.rightColX = this.leftColX + this.leftColWidth + 20;
         this.rightColWidth = this.pageWidth - this.rightColX - this.margins.right;
@@ -277,6 +276,11 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             this.rightColY = this.drawProjects(data.projects, this.rightColX, this.rightColY);
         }
         
+        // ===== AWARDS SECTION (Before References) =====
+        if (data.awards && data.awards.length) {
+            this.rightColY = this.drawAwards(data.awards, this.rightColX, this.rightColY);
+        }
+        
         this.rightColY = this.drawReferences(data.references, this.rightColX, this.rightColY);
     }
 
@@ -314,10 +318,10 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         y += 20;
         
         const items = [
-            { label: '📞', value: data.phone },
-            { label: '✉', value: data.email },
-            { label: '📍', value: data.address },
-            { label: '🌐', value: data.website }
+            { icon: 'phone-solid-full.png', value: data.phone },
+            { icon: 'envelope-solid-full.png', value: data.email },
+            { icon: 'location-dot-solid-full.png', value: data.address },
+            { icon: 'globe-solid-full.png', value: data.website }
         ];
         
         items.forEach(item => {
@@ -328,24 +332,22 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             }
             
             // Icon
-            this.doc
-                .fillColor(this.config.colors.secondary)
-                .fontSize(12)
-                .font(this.config.fonts.body)
-                .text(item.label, x, y);
-            
+            const iconPath = path.join(process.cwd(), 'public', 'Assets', item.icon);
+            this.doc.image(iconPath, x, y, { width: 10 });
             // Value (with proper wrapping)
             const valueHeight = this.calculateTextHeight(item.value, {
-                width: this.leftColWidth - 30,
-                fontSize: 9
+                width: this.leftColWidth - 1,
+                fontSize: 10,
+                lineGap: 2
+
             });
             
             this.doc
                 .fillColor(this.config.colors.text)
-                .fontSize(9)
+                .fontSize(10)
                 .font(this.config.fonts.body)
-                .text(item.value, x + 20, y, {
-                    width: this.leftColWidth - 30
+                .text(item.value, x + 20, y + 3, {
+                    width: this.leftColWidth - 1
                 });
             
             y += Math.max(18, valueHeight + 2);
@@ -415,52 +417,56 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         return y;
     }
 
-    drawSkills(skills, x, startY) {
-        let y = startY;
         
-        // Section title
+    drawSkills(skills, startX, startY) {
+        let y = startY;       
+        let x = startX;
+        
+        // Title draw karo
         this.doc
             .fillColor(this.config.colors.primary)
             .fontSize(14)
             .font(this.config.fonts.header)
-            .text('SKILLS', x, y);
+            .text('SKILLS', x, y); 
         
-        y += 20;
-        
-        // Skills in two columns within left column
-        const colWidth = (this.leftColWidth - 30) / 2;
-        
+        y += 20;  
+
+        const colWidth = this.leftColWidth; 
+        const bulletWidth = this.doc.widthOfString('• ');  
+
         skills.forEach((skill, index) => {
-            const col = index % 2;
-            const row = Math.floor(index / 2);
-            const skillX = x + (col * colWidth);
-            const skillY = y + (row * 15);
+            const skillText = `${skill}`; 
+            const skillWidth = this.doc.widthOfString(skillText);
+            const totalItemWidth = bulletWidth + skillWidth; 
+
             
-            // Check if we need a new page for next rows
-            if (row > 0 && row % 15 === 0 && skillY > this.pageHeight - this.margins.bottom) {
+            if (x + totalItemWidth > startX + colWidth) {
+                y += 15;        
+                x = startX;      
+            }
+
+            this.doc
+                .fillColor(this.config.colors.text)
+                .fontSize(9)
+                .font(this.config.fonts.body)
+                .text(`• ${skill}`, x, y, {
+                    lineBreak: false,  
+                    continued: false
+                });
+
+            
+            x = x + totalItemWidth + 10;  
+
+            // Page break check (optional)
+            if (y > this.pageHeight - this.margins.bottom - 20) {
                 this.addNewPage();
-                y = this.margins.top;
-                // Recalculate position on new page
-                const newSkillY = y + ((index % 30) * 15);
-                this.doc
-                    .fillColor(this.config.colors.text)
-                    .fontSize(9)
-                    .font(this.config.fonts.body)
-                    .text(`• ${skill}`, x + (col * colWidth), newSkillY, {
-                        width: colWidth - 5
-                    });
-            } else {
-                this.doc
-                    .fillColor(this.config.colors.text)
-                    .fontSize(9)
-                    .font(this.config.fonts.body)
-                    .text(`• ${skill}`, skillX, skillY, {
-                        width: colWidth - 5
-                    });
+                y = this.margins.top;  // New page pe top se shuru
+                x = startX;  // X bhi reset karo
             }
         });
         
-        y += (Math.ceil(skills.length / 2) * 15) + 10;
+        // Last skill ke baad thoda space
+        y += 20;
         return y;
     }
 
@@ -518,10 +524,10 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             
             this.doc
                 .fillColor(this.config.colors.text)
-                .fontSize(8)
+                .fontSize(9)
                 .font(this.config.fonts.body)
                 .text(`• ${cert}`, x + 5, y, {
-                    width: this.leftColWidth - 30
+                    width: this.leftColWidth - 1
                 });
             
             y += 12;
@@ -681,6 +687,58 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         return y;
     }
 
+    drawAwards(awards, x, startY) {
+        let y = startY;
+        
+        // Section title
+        this.doc
+            .fillColor(this.config.colors.primary)
+            .fontSize(16)
+            .font(this.config.fonts.header)
+            .text('AWARDS', x, y);
+        
+        y += 25;
+        
+        awards.forEach((award) => {
+            // Calculate height for this award
+            const awardHeight = this.calculateTextHeight(`• ${award}`, {
+                width: this.rightColWidth - 20,
+                fontSize: 10,
+                lineGap: 2
+            });
+            
+            // Check page break
+            if (y + awardHeight + 10 > this.pageHeight - this.margins.bottom) {
+                this.addNewPage();
+                y = this.margins.top;
+                // Redraw title on new page
+                this.doc
+                    .fillColor(this.config.colors.primary)
+                    .fontSize(16)
+                    .font(this.config.fonts.header)
+                    .text('AWARDS', x, y);
+                y += 25;
+            }
+            
+            // Award entry with bullet point
+            this.doc
+                .fillColor(this.config.colors.text)
+                .fontSize(10)
+                .font(this.config.fonts.body)
+                .text(`• ${award}`, x + 10, y, {
+                    width: this.rightColWidth - 20,
+                    lineGap: 2
+                });
+            
+            y += awardHeight + 8;
+        });
+        
+        // Add spacing after awards section
+        y += 10;
+        
+        return y;
+    }
+
     drawReferences(references, x, startY) {
         let y = startY;
         
@@ -739,7 +797,6 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         return y;
     }
 }
-
 // ==================== SINGLE COLUMN CLASSIC TEMPLATE (FIXED) ====================
 
 class SingleColumnClassicTemplate extends BaseResumeTemplate {
@@ -1351,7 +1408,9 @@ const sampleData = {
         'Leadership', 'Effective Communication', 'Critical Thinking', 'Strategic Planning',
         'Budget Management', 'Team Leadership', 'Market Analysis', 'Content Strategy',
         'SEO Optimization', 'Social Media Marketing', 'Email Campaigns', 'Analytics',
-        'CRM Software', 'Adobe Creative Suite', 'Microsoft Office', 'Google Analytics'
+        'CRM Software', 'Adobe Creative Suite', 'Microsoft Office', 'Google Analytics',
+         'Team Leadership', 'Market Analysis', 'Content Strategy',
+       
     ],
     languages: [
         'English (Fluent)', 'French (Fluent)', 'German (Basics)', 'Spanish (Intermediate)',
@@ -1361,6 +1420,16 @@ const sampleData = {
         'Google Analytics Certified', 'HubSpot Content Marketing',
         'Project Management Professional (PMP)', 'Digital Marketing Certification',
         'SEO Mastery Course', 'Social Media Strategy', 'Email Marketing Certification'
+    ],
+
+    awards:[
+        "Employee of the Month - Tech Solutions Inc. (June 2021)",
+        "Best Web Design - State University Hackathon (2016)",
+        "Outstanding Academic Achievement - State University (2015)",
+        "Employee of the Month - Tech Solutions Inc. (June 2021)",
+        "Best Web Design - State University Hackathon (2016)",
+        "Outstanding Academic Achievement - State University (2015)"
+
     ],
     projects: [
         {
@@ -1377,7 +1446,22 @@ const sampleData = {
             name: 'Social Media Campaign',
             description: 'Developed viral social media campaign reaching 1M+ users.',
             technologies: 'Meta Business Suite, Hootsuite'
-        }
+        },
+        {
+            name: 'Brand Redesign 2024',
+            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
+            technologies: 'Adobe Creative Suite, Figma'
+        },
+        {
+            name: 'Brand Redesign 2024',
+            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
+            technologies: 'Adobe Creative Suite, Figma'
+        },
+        {
+            name: 'Brand Redesign 2024',
+            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
+            technologies: 'Adobe Creative Suite, Figma'
+        },
     ],
     experience: [
         {
@@ -1414,7 +1498,21 @@ const sampleData = {
                 'Created and executed email marketing campaigns with 25% open rate.',
                 'Managed social media presence across 5 platforms.'
             ]
+        },
+
+                {
+            company: 'Studio Shodwe',
+            position: 'Marketing Manager & Specialist',
+            date: '2024 - 2025',
+            responsibilities: [
+                'Develop and maintain strong relationships with partners, agencies, and vendors to support marketing initiatives.',
+                'Monitor and maintain brand consistency across all marketing channels and materials.',
+                'Created and executed email marketing campaigns with 25% open rate.',
+                'Managed social media presence across 5 platforms.'
+            ]
         }
+
+        
     ],
     references: [
         {
