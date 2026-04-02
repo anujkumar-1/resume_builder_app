@@ -253,9 +253,7 @@ export const updateAwards = async (req, res) => {
                 { user: req.user.userId },
                 {
                     $set : {
-                    awards: {
-                       title: awards 
-                    }
+                        awards: awards
                     }
                 },
                 { new: true }
@@ -264,9 +262,7 @@ export const updateAwards = async (req, res) => {
         }
         else{
             const data = await Resume.create({user: req.user.userId,
-                awards: {
-                    title: awards
-                }
+                awards: awards
             })
             
             res.status(201).json({data})
