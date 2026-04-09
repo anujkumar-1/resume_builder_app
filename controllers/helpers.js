@@ -145,7 +145,7 @@ function generateResumePDF(userData, resumeData, doc) {
 
 
   // Experience
-  if (resumeData.experiences?.length) {
+  if (resumeData.experience?.length) {
     yPosition = checkPageBreak(40);
     yPosition += 20;
 
@@ -153,7 +153,7 @@ function generateResumePDF(userData, resumeData, doc) {
        .fontSize(12)
        .text('EXPERIENCE', 50, yPosition);
 
-    resumeData.experiences.forEach(exp => {
+    resumeData.experience.forEach(exp => {
       yPosition = checkPageBreak(60);
       yPosition += 15;
 
@@ -202,7 +202,7 @@ function generateResumePDF(userData, resumeData, doc) {
        .text('SKILLS', 50, yPosition);
     yPosition += 20;
     
-    const skills = resumeData.skills.split(',').map(s => `• ${cleanText(s)}`);
+    const skills = resumeData.skills.map(s => `• ${cleanText(s)}`);
     doc.font('Helvetica')
        .fontSize(10)
        .text(skills.join('\n'), 50, yPosition);
