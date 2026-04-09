@@ -1,8 +1,24 @@
-import PDFDocument from 'pdfkit'
-import fs  from 'fs'
-import path from 'path'
-// ==================== BASE CONFIGURATION ====================
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
+import { Upload } from '@aws-sdk/lib-storage';
+import { S3Client } from "@aws-sdk/client-s3";
+import { PassThrough } from 'stream';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ==================== AWS S3 CONFIGURATION ====================
+const s3Client = new S3Client({
+    region: process.env.AWS_S3_REGION || "us-east-1",
+    credentials: {
+        accessKeyId: process.env.AWS_S3_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_S3_SECRET_KEY,
+    },
+});
+
+// ==================== BASE CONFIGURATION ====================
 const BASE_CONFIG = {
     pageSize: 'A4',
     margins: {
@@ -10,14 +26,6 @@ const BASE_CONFIG = {
         right: 25,
         top: 30,
         bottom: 30
-    },
-    colors: {
-        primary: '#2C3E50',
-        secondary: '#E67E22',
-        text: '#333333',
-        lightBg: '#F5F7FA',
-        border: '#E0E0E0',
-        white: '#FFFFFF'
     },
     fonts: {
         header: 'Helvetica-Bold',
@@ -32,10 +40,62 @@ const BASE_CONFIG = {
     }
 };
 
-// ==================== BASE CLASS ====================
+// ==================== DEFAULT COLOR SCHEMES ====================
+export const COLOR_SCHEMES = {
+    professional: {
+        primary: '#2C3E50',
+        secondary: '#E67E22',
+        text: '#333333',
+        lightBg: '#F5F7FA',
+        border: '#E0E0E0',
+        white: '#FFFFFF'
+    },
+    elegant: {
+        primary: '#1A1A2E',
+        secondary: '#C4A484',
+        text: '#2D2D2D',
+        lightBg: '#F8F4F0',
+        border: '#D4C5B0',
+        white: '#FFFFFF'
+    },
+    modern: {
+        primary: '#0F172A',
+        secondary: '#3B82F6',
+        text: '#1E293B',
+        lightBg: '#F8FAFC',
+        border: '#CBD5E1',
+        white: '#FFFFFF'
+    },
+    creative: {
+        primary: '#6B21A5',
+        secondary: '#EC4899',
+        text: '#1F2937',
+        lightBg: '#FAF5FF',
+        border: '#E9D5FF',
+        white: '#FFFFFF'
+    },
+    corporate: {
+        primary: '#1E3A8A',
+        secondary: '#F59E0B',
+        text: '#111827',
+        lightBg: '#EFF6FF',
+        border: '#BFDBFE',
+        white: '#FFFFFF'
+    },
+    minimal: {
+        primary: '#000000',
+        secondary: '#666666',
+        text: '#333333',
+        lightBg: '#FAFAFA',
+        border: '#EEEEEE',
+        white: '#FFFFFF'
+    }
+};
 
+// ==================== BASE CLASS ====================
 class BaseResumeTemplate {
-    constructor(config = {}) {
+    constructor(colors, config = {}) {
+        this.colors = colors;
         this.config = this.mergeConfig(BASE_CONFIG, config);
         this.doc = new PDFDocument({
             size: this.config.pageSize,
@@ -48,11 +108,9 @@ class BaseResumeTemplate {
         this.pageHeight = this.doc.page.height;
         this.margins = this.config.margins;
         
-        // Content area
         this.contentWidth = this.pageWidth - this.margins.left - this.margins.right;
         this.contentHeight = this.pageHeight - this.margins.top - this.margins.bottom;
         
-        // Page tracking
         this.currentPage = 1;
         this.currentY = this.margins.top;
     }
@@ -68,8 +126,6 @@ class BaseResumeTemplate {
         }
         return merged;
     }
-
-    // ==================== PAGE MANAGEMENT ====================
 
     checkPageBreak(requiredSpace, startY = this.currentY) {
         if (startY + requiredSpace > this.pageHeight - this.margins.bottom) {
@@ -108,7 +164,7 @@ class BaseResumeTemplate {
         const requiredHeight = this.calculateTextHeight(text, { width, fontSize, lineGap });
         
         this.doc
-            .fillColor(options.color || this.config.colors.text)
+            .fillColor(options.color || this.colors.text)
             .fontSize(fontSize)
             .font(options.font || this.config.fonts.body)
             .text(text, x, y, {
@@ -122,28 +178,59 @@ class BaseResumeTemplate {
 
     writeSectionTitle(title, x, y) {
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(14)
             .font(this.config.fonts.header)
             .text(title, x, y);
         
-        return 18; // Height of section title
+        return 18;
     }
 
-    // ==================== MAIN GENERATION ====================
+    async uploadToS3(passThrough, fileName) {
+        try {
+            const upload = new Upload({
+                client: s3Client,
+                params: {
+                    Bucket: process.env.AWS_S3_BUCKET_NAME,
+                    Key: fileName,
+                    Body: passThrough,
+                    ContentType: 'application/pdf',
+                    ACL: "public-read",
+                },
+            });
 
-    generate(data, filename) {
-        this.currentPage = 1;
-        this.currentY = this.margins.top;
-        
-        const stream = this.doc.pipe(fs.createWriteStream(filename));
-        
-        this.generateSections(data);
-        
-        this.doc.end();
-        
-        stream.on('finish', () => {
-            console.log(`✅ ${this.constructor.name} generated: ${filename} (${this.currentPage} page${this.currentPage > 1 ? 's' : ''})`);
+            const result = await upload.done();
+            return result.Location;
+        } catch (error) {
+            console.error('S3 Upload Error:', error);
+            throw new Error(`Failed to upload to S3: ${error.message}`);
+        }
+    }
+
+    async generateAndUpload(data, fileName) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                this.currentPage = 1;
+                this.currentY = this.margins.top;
+                
+                // Create a PassThrough stream
+                const passThrough = new PassThrough();
+                
+                // Pipe PDF document to PassThrough stream
+                this.doc.pipe(passThrough);
+                
+                // Generate PDF content
+                this.generateSections(data);
+                this.doc.end();
+                
+                // Upload to S3 and get URL
+                const s3Url = await this.uploadToS3(passThrough, fileName);
+                
+                console.log(`✅ ${this.constructor.name} uploaded to S3: ${s3Url} (${this.currentPage} page${this.currentPage > 1 ? 's' : ''})`);
+                resolve({ url: s3Url, pages: this.currentPage, fileName });
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
@@ -152,26 +239,24 @@ class BaseResumeTemplate {
     }
 }
 
-// ==================== TWO COLUMN MODERN TEMPLATE (FIXED) ====================
+// ==================== TWO COLUMN MODERN TEMPLATE ====================
 class TwoColumnModernTemplate extends BaseResumeTemplate {
-    constructor(config = {}) {
-        super(config);
-        this.leftColWidth = 180;  // Changed from 200 to 180
+    constructor(colors, config = {}) {
+        super(colors, config);
+        this.leftColWidth = 180;
         this.leftColX = this.margins.left;
         this.rightColX = this.leftColX + this.leftColWidth + 20;
         this.rightColWidth = this.pageWidth - this.rightColX - this.margins.right;
     }
 
     onPageAdded() {
-        // Redraw left column background on every page
         this.doc
-            .fillColor(this.config.colors.lightBg)
+            .fillColor(this.colors.lightBg)
             .rect(0, 0, this.leftColWidth + this.margins.left, this.pageHeight)
             .fill();
         
-        // Draw border
         this.doc
-            .strokeColor(this.config.colors.border)
+            .strokeColor(this.colors.border)
             .lineWidth(1)
             .moveTo(this.leftColWidth + this.margins.left, 0)
             .lineTo(this.leftColWidth + this.margins.left, this.pageHeight)
@@ -179,38 +264,34 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
     }
 
     generateSections(data) {
-        // Draw left column background on first page
         this.onPageAdded();
         
-        // Reset Y positions
         this.leftColY = this.margins.top;
         this.rightColY = this.margins.top;
         
-        // ===== HEADER (Right Column) =====
+        // Header
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(28)
             .font(this.config.fonts.header)
             .text(data.personalInfo.name, this.rightColX, this.rightColY);
         
         this.doc
-            .fillColor(this.config.colors.secondary)
+            .fillColor(this.colors.secondary)
             .fontSize(14)
             .font(this.config.fonts.body)
             .text(data.personalInfo.title, this.rightColX, this.rightColY + 30);
         
         this.rightColY += 60;
         
-        // ===== PROFILE (Right Column - MUST BE ON PAGE 1) =====
+        // Profile
         const profileHeight = this.calculateTextHeight(data.summary, {
             width: this.rightColWidth,
             fontSize: 10,
             lineGap: 4
         });
         
-        // Ensure profile fits on page 1
         if (this.rightColY + profileHeight + 30 > this.pageHeight - this.margins.bottom) {
-            // If too tall, start on page 1 but continue on page 2
             const spaceLeft = this.pageHeight - this.margins.bottom - this.rightColY - 30;
             const firstPart = this.getPartialText(data.summary, spaceLeft, {
                 width: this.rightColWidth,
@@ -219,7 +300,7 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             });
             
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(firstPart.text, this.rightColX, this.rightColY, {
@@ -230,9 +311,8 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             this.rightColY = this.pageHeight - this.margins.bottom + 20;
             this.addNewPage();
             
-            // Continue profile on next page
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(firstPart.remaining, this.rightColX, this.rightColY, {
@@ -246,9 +326,8 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
                 lineGap: 4
             }) + 15;
         } else {
-            // Profile fits on page 1
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(data.summary, this.rightColX, this.rightColY, {
@@ -259,7 +338,7 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             this.rightColY += profileHeight + 15;
         }
         
-        // ===== LEFT COLUMN SECTIONS =====
+        // Left Column Sections
         this.leftColY = this.drawContact(data.contact, this.leftColX, this.leftColY);
         this.leftColY = this.drawEducation(data.education, this.leftColX, this.leftColY);
         this.leftColY = this.drawSkills(data.skills, this.leftColX, this.leftColY);
@@ -269,19 +348,18 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             this.leftColY = this.drawCertificates(data.certificates, this.leftColX, this.leftColY);
         }
         
-        // ===== RIGHT COLUMN SECTIONS =====
+        // Right Column Sections
         this.rightColY = this.drawExperience(data.experience, this.rightColX, this.rightColY);
         
         if (data.projects && data.projects.length) {
             this.rightColY = this.drawProjects(data.projects, this.rightColX, this.rightColY);
         }
         
-        // ===== AWARDS SECTION (Before References) =====
         if (data.awards && data.awards.length) {
             this.rightColY = this.drawAwards(data.awards, this.rightColX, this.rightColY);
         }
         
-        this.rightColY = this.drawReferences(data.references, this.rightColX, this.rightColY);
+        // this.rightColY = this.drawReferences(data.references, this.rightColX, this.rightColY);
     }
 
     getPartialText(text, maxHeight, options) {
@@ -308,9 +386,8 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
     drawContact(data, x, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(14)
             .font(this.config.fonts.header)
             .text('CONTACT', x, y);
@@ -318,32 +395,26 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         y += 20;
         
         const items = [
-            { icon: 'phone-solid-full.png', value: data.phone },
-            { icon: 'envelope-solid-full.png', value: data.email },
-            { icon: 'location-dot-solid-full.png', value: data.address },
-            { icon: 'globe-solid-full.png', value: data.website }
+            { value: data.phone },
+            { value: data.email },
+            { value: data.address },
+            { value: data.website }
         ];
         
         items.forEach(item => {
-            // Check page break
             if (y + 20 > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
-            // Icon
-            const iconPath = path.join(process.cwd(), 'public', 'Assets', item.icon);
-            this.doc.image(iconPath, x, y, { width: 10 });
-            // Value (with proper wrapping)
             const valueHeight = this.calculateTextHeight(item.value, {
                 width: this.leftColWidth - 1,
                 fontSize: 10,
                 lineGap: 2
-
             });
             
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(item.value, x + 20, y + 3, {
@@ -359,9 +430,8 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
     drawEducation(education, x, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(14)
             .font(this.config.fonts.header)
             .text('EDUCATION', x, y);
@@ -369,40 +439,35 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         y += 20;
         
         education.forEach((edu) => {
-            // Check page break
             if (y + 70 > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
-            // Year
             this.doc
-                .fillColor(this.config.colors.secondary)
+                .fillColor(this.colors.secondary)
                 .fontSize(10)
                 .font(this.config.fonts.subheader)
                 .text(edu.year, x, y);
             y += 12;
             
-            // School
             this.doc
-                .fillColor(this.config.colors.primary)
+                .fillColor(this.colors.primary)
                 .fontSize(11)
                 .font(this.config.fonts.subheader)
                 .text(edu.school, x, y);
             y += 12;
             
-            // Degree
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(edu.degree, x, y);
             y += 12;
             
-            // GPA
             if (edu.gpa) {
                 this.doc
-                    .fillColor(this.config.colors.text)
+                    .fillColor(this.colors.text)
                     .fontSize(9)
                     .font(this.config.fonts.italic)
                     .text(edu.gpa, x, y);
@@ -417,14 +482,12 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         return y;
     }
 
-        
     drawSkills(skills, startX, startY) {
         let y = startY;       
         let x = startX;
         
-        // Title draw karo
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(14)
             .font(this.config.fonts.header)
             .text('SKILLS', x, y); 
@@ -439,14 +502,13 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             const skillWidth = this.doc.widthOfString(skillText);
             const totalItemWidth = bulletWidth + skillWidth; 
 
-            
             if (x + totalItemWidth > startX + colWidth) {
                 y += 15;        
                 x = startX;      
             }
 
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(9)
                 .font(this.config.fonts.body)
                 .text(`• ${skill}`, x, y, {
@@ -454,18 +516,15 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
                     continued: false
                 });
 
-            
             x = x + totalItemWidth + 10;  
 
-            // Page break check (optional)
             if (y > this.pageHeight - this.margins.bottom - 20) {
                 this.addNewPage();
-                y = this.margins.top;  // New page pe top se shuru
-                x = startX;  // X bhi reset karo
+                y = this.margins.top;
+                x = startX;
             }
         });
         
-        // Last skill ke baad thoda space
         y += 20;
         return y;
     }
@@ -473,9 +532,8 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
     drawLanguages(languages, x, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(14)
             .font(this.config.fonts.header)
             .text('LANGUAGES', x, y);
@@ -483,14 +541,13 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         y += 20;
         
         languages.forEach((lang) => {
-            // Check page break
             if (y + 15 > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(9)
                 .font(this.config.fonts.body)
                 .text(`• ${lang}`, x + 5, y, {
@@ -506,9 +563,8 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
     drawCertificates(certificates, x, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(14)
             .font(this.config.fonts.header)
             .text('CERTIFICATES', x, y);
@@ -516,14 +572,13 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         y += 20;
         
         certificates.forEach((cert) => {
-            // Check page break
             if (y + 15 > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(9)
                 .font(this.config.fonts.body)
                 .text(`• ${cert}`, x + 5, y, {
@@ -536,76 +591,87 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         return y + 5;
     }
 
-    drawExperience(experiences, x, startY) {
+    drawExperience(experience, x, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('WORK EXPERIENCE', x, y);
         
         y += 25;
         
-        experiences.forEach((exp) => {
-            // Calculate height for this experience
-            let expHeight = 40; // Company, date, position
-            exp.responsibilities.forEach(resp => {
-                expHeight += this.calculateTextHeight(`• ${resp}`, {
+        experience.forEach((exp) => {
+            // Handle both data structures (startDate/endDate or date)
+            const startDate = exp.startDate || '';
+            const endDate = exp.endDate || '';
+            const dateText = exp.date || `${startDate} - ${endDate}`.trim();
+            const finalDateText = (dateText && dateText !== ' - ') ? dateText : 'Date not specified';
+            
+            // Handle role/position
+            const roleText = exp.role || exp.position || 'Position not specified';
+            
+            // Handle description/responsibilities
+            const description = exp.description || exp.responsibilities || [];
+            
+            let expHeight = 40;
+            description.forEach(desc => {
+                expHeight += this.calculateTextHeight(`• ${desc}`, {
                     width: this.rightColWidth - 20,
                     fontSize: 9
                 }) + 4;
             });
             
-            // Check if we need a new page
             if (y + expHeight > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
-            // Company and date
+            // Company name
+            const companyName = exp.company || 'Not Specified';
             this.doc
-                .fillColor(this.config.colors.primary)
+                .fillColor(this.colors.primary)
                 .fontSize(13)
                 .font(this.config.fonts.subheader)
-                .text(exp.company, x, y);
+                .text(companyName, x, y);
             
-            const dateWidth = this.doc.widthOfString(exp.date);
+            // Date
+            const dateWidth = this.doc.widthOfString(finalDateText);
             this.doc
-                .fillColor(this.config.colors.secondary)
+                .fillColor(this.colors.secondary)
                 .fontSize(11)
                 .font(this.config.fonts.subheader)
-                .text(exp.date, x + this.rightColWidth - dateWidth, y);
+                .text(finalDateText, x + this.rightColWidth - dateWidth, y);
             
             y += 18;
             
-            // Position
+            // Role/Position
             this.doc
-                .fillColor(this.config.colors.secondary)
+                .fillColor(this.colors.secondary)
                 .fontSize(12)
                 .font(this.config.fonts.italic)
-                .text(exp.position, x, y);
+                .text(roleText, x, y);
             
             y += 18;
             
-            // Responsibilities
-            exp.responsibilities.forEach(resp => {
-                const respHeight = this.calculateTextHeight(`• ${resp}`, {
+            // Description bullets
+            description.forEach(desc => {
+                const descHeight = this.calculateTextHeight(`• ${desc}`, {
                     width: this.rightColWidth - 20,
                     fontSize: 9
                 });
                 
                 this.doc
-                    .fillColor(this.config.colors.text)
+                    .fillColor(this.colors.text)
                     .fontSize(9)
                     .font(this.config.fonts.body)
-                    .text(`• ${resp}`, x + 10, y, {
+                    .text(`• ${desc}`, x + 10, y, {
                         width: this.rightColWidth - 20,
                         lineGap: 2
                     });
                 
-                y += respHeight + 4;
+                y += descHeight + 4;
             });
             
             y += 15;
@@ -617,9 +683,8 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
     drawProjects(projects, x, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('PROJECTS', x, y);
@@ -627,8 +692,7 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         y += 25;
         
         projects.forEach((project) => {
-            // Calculate height
-            let projHeight = 15; // Name
+            let projHeight = 15;
             if (project.description) {
                 projHeight += this.calculateTextHeight(project.description, {
                     width: this.rightColWidth,
@@ -639,21 +703,18 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
                 projHeight += 12;
             }
             
-            // Check page break
             if (y + projHeight > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
-            // Project name
             this.doc
-                .fillColor(this.config.colors.primary)
+                .fillColor(this.colors.primary)
                 .fontSize(12)
                 .font(this.config.fonts.subheader)
                 .text(project.name, x, y);
             y += 15;
             
-            // Description
             if (project.description) {
                 const descHeight = this.calculateTextHeight(project.description, {
                     width: this.rightColWidth,
@@ -661,7 +722,7 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
                 });
                 
                 this.doc
-                    .fillColor(this.config.colors.text)
+                    .fillColor(this.colors.text)
                     .fontSize(9)
                     .font(this.config.fonts.body)
                     .text(project.description, x, y, {
@@ -671,10 +732,9 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
                 y += descHeight + 5;
             }
             
-            // Technologies
             if (project.technologies) {
                 this.doc
-                    .fillColor(this.config.colors.secondary)
+                    .fillColor(this.colors.secondary)
                     .fontSize(8)
                     .font(this.config.fonts.italic)
                     .text(`Tech: ${project.technologies}`, x, y);
@@ -690,9 +750,8 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
     drawAwards(awards, x, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('AWARDS', x, y);
@@ -700,29 +759,19 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         y += 25;
         
         awards.forEach((award) => {
-            // Calculate height for this award
             const awardHeight = this.calculateTextHeight(`• ${award}`, {
                 width: this.rightColWidth - 20,
                 fontSize: 10,
                 lineGap: 2
             });
             
-            // Check page break
             if (y + awardHeight + 10 > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
-                // Redraw title on new page
-                this.doc
-                    .fillColor(this.config.colors.primary)
-                    .fontSize(16)
-                    .font(this.config.fonts.header)
-                    .text('AWARDS', x, y);
-                y += 25;
             }
             
-            // Award entry with bullet point
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(`• ${award}`, x + 10, y, {
@@ -733,86 +782,75 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
             y += awardHeight + 8;
         });
         
-        // Add spacing after awards section
         y += 10;
-        
         return y;
     }
 
-    drawReferences(references, x, startY) {
-        let y = startY;
+    // drawReferences(references, x, startY) {
+    //     let y = startY;
         
-        // Section title
-        this.doc
-            .fillColor(this.config.colors.primary)
-            .fontSize(16)
-            .font(this.config.fonts.header)
-            .text('REFERENCES', x, y);
+    //     this.doc
+    //         .fillColor(this.colors.primary)
+    //         .fontSize(16)
+    //         .font(this.config.fonts.header)
+    //         .text('REFERENCES', x, y);
         
-        y += 25;
+    //     y += 25;
         
-        references.forEach((ref) => {
-            // Calculate height
-            const refHeight = 60;
+    //     references.forEach((ref) => {
+    //         const refHeight = 60;
             
-            // Check page break
-            if (y + refHeight > this.pageHeight - this.margins.bottom) {
-                this.addNewPage();
-                y = this.margins.top;
-            }
+    //         if (y + refHeight > this.pageHeight - this.margins.bottom) {
+    //             this.addNewPage();
+    //             y = this.margins.top;
+    //         }
             
-            // Name
-            this.doc
-                .fillColor(this.config.colors.primary)
-                .fontSize(12)
-                .font(this.config.fonts.subheader)
-                .text(ref.name, x, y);
-            y += 15;
+    //         this.doc
+    //             .fillColor(this.colors.primary)
+    //             .fontSize(12)
+    //             .font(this.config.fonts.subheader)
+    //             .text(ref.name, x, y);
+    //         y += 15;
             
-            // Title
-            this.doc
-                .fillColor(this.config.colors.secondary)
-                .fontSize(11)
-                .font(this.config.fonts.body)
-                .text(ref.title, x, y);
-            y += 12;
+    //         this.doc
+    //             .fillColor(this.colors.secondary)
+    //             .fontSize(11)
+    //             .font(this.config.fonts.body)
+    //             .text(ref.title, x, y);
+    //         y += 12;
             
-            // Phone
-            this.doc
-                .fillColor(this.config.colors.text)
-                .fontSize(10)
-                .font(this.config.fonts.body)
-                .text(`Phone: ${ref.phone}`, x + 10, y);
-            y += 12;
+    //         this.doc
+    //             .fillColor(this.colors.text)
+    //             .fontSize(10)
+    //             .font(this.config.fonts.body)
+    //             .text(`Phone: ${ref.phone}`, x + 10, y);
+    //         y += 12;
             
-            // Email
-            this.doc
-                .fillColor(this.config.colors.text)
-                .fontSize(10)
-                .font(this.config.fonts.body)
-                .text(`Email: ${ref.email}`, x + 10, y);
-            y += 20;
-        });
+    //         this.doc
+    //             .fillColor(this.colors.text)
+    //             .fontSize(10)
+    //             .font(this.config.fonts.body)
+    //             .text(`Email: ${ref.email}`, x + 10, y);
+    //         y += 20;
+    //     });
         
-        return y;
-    }
+    //     return y;
+    // }
 }
-// ==================== SINGLE COLUMN CLASSIC TEMPLATE (FIXED) ====================
 
+// ==================== SINGLE COLUMN CLASSIC TEMPLATE ====================
 class SingleColumnClassicTemplate extends BaseResumeTemplate {
-    constructor(config = {}) {
-        super(config);
+    constructor(colors, config = {}) {
+        super(colors, config);
         this.contentX = this.margins.left;
         this.contentWidth = this.pageWidth - this.margins.left - this.margins.right;
     }
 
     generateSections(data) {
-        // Reset Y
         this.currentY = this.margins.top;
         
-        // ===== HEADER =====
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(32)
             .font(this.config.fonts.header)
             .text(data.personalInfo.name, this.contentX, this.currentY, { 
@@ -823,7 +861,7 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
         this.currentY += 35;
         
         this.doc
-            .fillColor(this.config.colors.secondary)
+            .fillColor(this.colors.secondary)
             .fontSize(16)
             .font(this.config.fonts.body)
             .text(data.personalInfo.title, this.contentX, this.currentY, { 
@@ -833,11 +871,10 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
         
         this.currentY += 25;
         
-        // ===== CONTACT =====
         const contactText = `${data.contact.phone}  |  ${data.contact.email}  |  ${data.contact.address}  |  ${data.contact.website}`;
         
         this.doc
-            .fillColor(this.config.colors.text)
+            .fillColor(this.colors.text)
             .fontSize(10)
             .font(this.config.fonts.body)
             .text(contactText, this.contentX, this.currentY, {
@@ -847,56 +884,41 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
         
         this.currentY += 25;
         
-        // Horizontal line
         this.doc
-            .strokeColor(this.config.colors.border)
+            .strokeColor(this.colors.border)
             .lineWidth(1)
             .moveTo(this.contentX, this.currentY - 5)
             .lineTo(this.contentX + this.contentWidth, this.currentY - 5)
             .stroke();
         
-        // ===== PROFILE =====
         this.currentY = this.drawProfile(data.summary, this.currentY);
-        
-        // ===== WORK EXPERIENCE =====
         this.currentY = this.drawExperience(data.experience, this.currentY);
-        
-        // ===== EDUCATION =====
         this.currentY = this.drawEducation(data.education, this.currentY);
-        
-        // ===== SKILLS =====
         this.currentY = this.drawSkills(data.skills, this.currentY);
-        
-        // ===== LANGUAGES =====
         this.currentY = this.drawLanguages(data.languages, this.currentY);
         
-        // ===== CERTIFICATES =====
         if (data.certificates && data.certificates.length) {
             this.currentY = this.drawCertificates(data.certificates, this.currentY);
         }
         
-        // ===== PROJECTS =====
         if (data.projects && data.projects.length) {
             this.currentY = this.drawProjects(data.projects, this.currentY);
         }
         
-        // ===== REFERENCES =====
-        this.currentY = this.drawReferences(data.references, this.currentY);
+        // this.currentY = this.drawReferences(data.references, this.currentY);
     }
 
     drawProfile(text, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('PROFESSIONAL SUMMARY', this.contentX, y);
         
         y += 20;
         
-        // Calculate height and check page break
         const textHeight = this.calculateTextHeight(text, {
             width: this.contentWidth,
             fontSize: 10,
@@ -912,7 +934,7 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
             });
             
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(firstPart.text, this.contentX, y, {
@@ -925,7 +947,7 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
             y = this.margins.top;
             
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(firstPart.remaining, this.contentX, y, {
@@ -941,7 +963,7 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
             }) + 20;
         } else {
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(text, this.contentX, y, {
@@ -959,9 +981,8 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
     drawExperience(experiences, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('WORK EXPERIENCE', this.contentX, y);
@@ -969,55 +990,50 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
         y += 25;
         
         experiences.forEach((exp) => {
-            // Calculate total height needed
             let expHeight = 40;
-            exp.responsibilities.forEach(resp => {
+            exp.description.forEach(resp => {
                 expHeight += this.calculateTextHeight(`• ${resp}`, {
                     width: this.contentWidth - 20,
                     fontSize: 10
                 }) + 4;
             });
             
-            // Check page break
             if (y + expHeight > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
-            // Company and date
             this.doc
-                .fillColor(this.config.colors.primary)
+                .fillColor(this.colors.primary)
                 .fontSize(14)
                 .font(this.config.fonts.subheader)
                 .text(exp.company, this.contentX, y);
             
             const dateWidth = this.doc.widthOfString(exp.date);
             this.doc
-                .fillColor(this.config.colors.secondary)
+                .fillColor(this.colors.secondary)
                 .fontSize(12)
                 .font(this.config.fonts.subheader)
                 .text(exp.date, this.contentX + this.contentWidth - dateWidth, y);
             
             y += 20;
             
-            // Position
             this.doc
-                .fillColor(this.config.colors.secondary)
+                .fillColor(this.colors.secondary)
                 .fontSize(12)
                 .font(this.config.fonts.italic)
                 .text(exp.position, this.contentX, y);
             
             y += 18;
             
-            // Responsibilities
-            exp.responsibilities.forEach(resp => {
+            exp.description.forEach(resp => {
                 const respHeight = this.calculateTextHeight(`• ${resp}`, {
                     width: this.contentWidth - 20,
                     fontSize: 10
                 });
                 
                 this.doc
-                    .fillColor(this.config.colors.text)
+                    .fillColor(this.colors.text)
                     .fontSize(10)
                     .font(this.config.fonts.body)
                     .text(`• ${resp}`, this.contentX + 10, y, {
@@ -1037,9 +1053,8 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
     drawEducation(education, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('EDUCATION', this.contentX, y);
@@ -1047,40 +1062,36 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
         y += 25;
         
         education.forEach((edu) => {
-            // Check page break
             if (y + 80 > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
-            // School and year
             this.doc
-                .fillColor(this.config.colors.primary)
+                .fillColor(this.colors.primary)
                 .fontSize(13)
                 .font(this.config.fonts.subheader)
                 .text(edu.school, this.contentX, y);
             
             const yearWidth = this.doc.widthOfString(edu.year);
             this.doc
-                .fillColor(this.config.colors.secondary)
+                .fillColor(this.colors.secondary)
                 .fontSize(11)
                 .font(this.config.fonts.subheader)
                 .text(edu.year, this.contentX + this.contentWidth - yearWidth, y);
             
             y += 18;
             
-            // Degree
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(11)
                 .font(this.config.fonts.body)
                 .text(edu.degree, this.contentX + 10, y);
             y += 15;
             
-            // GPA
             if (edu.gpa) {
                 this.doc
-                    .fillColor(this.config.colors.text)
+                    .fillColor(this.colors.text)
                     .fontSize(9)
                     .font(this.config.fonts.italic)
                     .text(edu.gpa, this.contentX + 10, y);
@@ -1096,16 +1107,14 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
     drawSkills(skills, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('SKILLS', this.contentX, y);
         
         y += 25;
         
-        // Skills in 3 columns
         const colWidth = (this.contentWidth - 40) / 3;
         
         skills.forEach((skill, index) => {
@@ -1114,14 +1123,12 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
             const skillX = this.contentX + (col * (colWidth + 10));
             const skillY = y + (row * 18);
             
-            // Check if we need a new page for next rows
             if (row > 0 && row % 20 === 0 && skillY > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
-                // Recalculate on new page
                 const newSkillY = y + ((index % 60) * 18);
                 this.doc
-                    .fillColor(this.config.colors.text)
+                    .fillColor(this.colors.text)
                     .fontSize(10)
                     .font(this.config.fonts.body)
                     .text(`• ${skill}`, this.contentX + (col * (colWidth + 10)), newSkillY, {
@@ -1129,7 +1136,7 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
                     });
             } else {
                 this.doc
-                    .fillColor(this.config.colors.text)
+                    .fillColor(this.colors.text)
                     .fontSize(10)
                     .font(this.config.fonts.body)
                     .text(`• ${skill}`, skillX, skillY, {
@@ -1145,9 +1152,8 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
     drawLanguages(languages, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('LANGUAGES', this.contentX, y);
@@ -1161,7 +1167,7 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
             }
             
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(`• ${lang}`, this.contentX + 10, y, {
@@ -1177,9 +1183,8 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
     drawCertificates(certificates, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('CERTIFICATIONS', this.contentX, y);
@@ -1193,7 +1198,7 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
             }
             
             this.doc
-                .fillColor(this.config.colors.text)
+                .fillColor(this.colors.text)
                 .fontSize(10)
                 .font(this.config.fonts.body)
                 .text(`• ${cert}`, this.contentX + 10, y, {
@@ -1209,9 +1214,8 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
     drawProjects(projects, startY) {
         let y = startY;
         
-        // Section title
         this.doc
-            .fillColor(this.config.colors.primary)
+            .fillColor(this.colors.primary)
             .fontSize(16)
             .font(this.config.fonts.header)
             .text('PROJECTS', this.contentX, y);
@@ -1219,7 +1223,6 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
         y += 25;
         
         projects.forEach((project) => {
-            // Calculate height
             let projHeight = 15;
             if (project.description) {
                 projHeight += this.calculateTextHeight(project.description, {
@@ -1231,21 +1234,18 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
                 projHeight += 15;
             }
             
-            // Check page break
             if (y + projHeight > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
-            // Project name
             this.doc
-                .fillColor(this.config.colors.primary)
+                .fillColor(this.colors.primary)
                 .fontSize(13)
                 .font(this.config.fonts.subheader)
                 .text(project.name, this.contentX, y);
             y += 15;
             
-            // Description
             if (project.description) {
                 const descHeight = this.calculateTextHeight(project.description, {
                     width: this.contentWidth,
@@ -1253,7 +1253,7 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
                 });
                 
                 this.doc
-                    .fillColor(this.config.colors.text)
+                    .fillColor(this.colors.text)
                     .fontSize(10)
                     .font(this.config.fonts.body)
                     .text(project.description, this.contentX, y, {
@@ -1263,10 +1263,9 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
                 y += descHeight + 5;
             }
             
-            // Technologies
             if (project.technologies) {
                 this.doc
-                    .fillColor(this.config.colors.secondary)
+                    .fillColor(this.colors.secondary)
                     .fontSize(9)
                     .font(this.config.fonts.italic)
                     .text(`Technologies: ${project.technologies}`, this.contentX, y);
@@ -1279,65 +1278,58 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
         return y;
     }
 
-    drawReferences(references, startY) {
-        let y = startY;
+    // drawReferences(references, startY) {
+    //     let y = startY;
         
-        // Section title
-        this.doc
-            .fillColor(this.config.colors.primary)
-            .fontSize(16)
-            .font(this.config.fonts.header)
-            .text('REFERENCES', this.contentX, y);
+    //     this.doc
+    //         .fillColor(this.colors.primary)
+    //         .fontSize(16)
+    //         .font(this.config.fonts.header)
+    //         .text('REFERENCES', this.contentX, y);
         
-        y += 25;
+    //     y += 25;
         
-        references.forEach((ref) => {
-            // Calculate height
-            const refHeight = 70;
+    //     references.forEach((ref) => {
+    //         const refHeight = 70;
             
-            // Check page break
-            if (y + refHeight > this.pageHeight - this.margins.bottom) {
-                this.addNewPage();
-                y = this.margins.top;
-            }
+    //         if (y + refHeight > this.pageHeight - this.margins.bottom) {
+    //             this.addNewPage();
+    //             y = this.margins.top;
+    //         }
             
-            // Name
-            this.doc
-                .fillColor(this.config.colors.primary)
-                .fontSize(13)
-                .font(this.config.fonts.subheader)
-                .text(ref.name, this.contentX, y);
-            y += 15;
+    //         this.doc
+    //             .fillColor(this.colors.primary)
+    //             .fontSize(13)
+    //             .font(this.config.fonts.subheader)
+    //             .text(ref.name, this.contentX, y);
+    //         y += 15;
             
-            // Title
-            this.doc
-                .fillColor(this.config.colors.secondary)
-                .fontSize(11)
-                .font(this.config.fonts.body)
-                .text(ref.title, this.contentX, y);
-            y += 12;
+    //         this.doc
+    //             .fillColor(this.colors.secondary)
+    //             .fontSize(11)
+    //             .font(this.config.fonts.body)
+    //             .text(ref.title, this.contentX, y);
+    //         y += 12;
             
-            // Phone
-            this.doc
-                .fillColor(this.config.colors.text)
-                .fontSize(10)
-                .font(this.config.fonts.body)
-                .text(`Phone: ${ref.phone}`, this.contentX + 15, y);
-            y += 12;
+    //         this.doc
+    //             .fillColor(this.colors.text)
+    //             .fontSize(10)
+    //             .font(this.config.fonts.body)
+    //             .text(`Phone: ${ref.phone}`, this.contentX + 15, y);
+    //         y += 12;
             
-            // Email
-            this.doc
-                .fillColor(this.config.colors.text)
-                .fontSize(10)
-                .font(this.config.fonts.body)
-                .text(`Email: ${ref.email}`, this.contentX + 15, y);
-            y += 20;
+    //         this.doc
+    //             .fillColor(this.colors.text)
+    //             .fontSize(10)
+    //             .font(this.config.fonts.body)
+    //             .text(`Email: ${ref.email}`, this.contentX + 15, y);
+    //         y += 20;
             
-            y += 5;
-        });
+    //         y += 5;
+    //     });
         
-        return y;
-    }
+    //     return y;
+    // }
 
     getPartialText(text, maxHeight, options) {
         const words = text.split(' ');
@@ -1362,190 +1354,49 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
 }
 
 // ==================== TEMPLATE FACTORY ====================
-
 class ResumeTemplateFactory {
-    static createTemplate(type, config = {}) {
+    static createTemplate(type, colors, config = {}) {
         switch(type) {
             case 'two-column-modern':
-                return new TwoColumnModernTemplate(config);
+                return new TwoColumnModernTemplate(colors, config);
             case 'single-column-classic':
-                return new SingleColumnClassicTemplate(config);
+                return new SingleColumnClassicTemplate(colors, config);
             default:
                 throw new Error(`Unknown template type: ${type}`);
         }
     }
 }
 
-// ==================== SAMPLE DATA ====================
-
-const sampleData = {
-    personalInfo: {
-        name: 'RICHARD SANCHEZ',
-        title: 'MARKETING MANAGER'
-    },
-    contact: {
-        phone: '+123-456-7890',
-        email: 'hello@reallygreatsite.com',
-        address: '123 Anywhere St., Any City, State 12345',
-        website: 'www.reallygreatsite.com'
-    },
-    summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation. Ut enim ad minim veniam quis nostrud exercitation. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation.',
-    education: [
-        {
-            year: '2029 - 2030',
-            school: 'WARDIERE UNIVERSITY',
-            degree: 'Master of Business Management'
-        },
-        {
-            year: '2025 - 2029',
-            school: 'WARDIERE UNIVERSITY',
-            degree: 'Bachelor of Business',
-            gpa: 'GPA: 3.8 / 4.0'
-        }
-    ],
-    skills: [
-        'Project Management', 'Public Relations', 'Teamwork', 'Time Management',
-        'Leadership', 'Effective Communication', 'Critical Thinking', 'Strategic Planning',
-        'Budget Management', 'Team Leadership', 'Market Analysis', 'Content Strategy',
-        'SEO Optimization', 'Social Media Marketing', 'Email Campaigns', 'Analytics',
-        'CRM Software', 'Adobe Creative Suite', 'Microsoft Office', 'Google Analytics',
-         'Team Leadership', 'Market Analysis', 'Content Strategy',
-       
-    ],
-    languages: [
-        'English (Fluent)', 'French (Fluent)', 'German (Basics)', 'Spanish (Intermediate)',
-        'Italian (Conversational)'
-    ],
-    certificates: [
-        'Google Analytics Certified', 'HubSpot Content Marketing',
-        'Project Management Professional (PMP)', 'Digital Marketing Certification',
-        'SEO Mastery Course', 'Social Media Strategy', 'Email Marketing Certification'
-    ],
-
-    awards:[
-        "Employee of the Month - Tech Solutions Inc. (June 2021)",
-        "Best Web Design - State University Hackathon (2016)",
-        "Outstanding Academic Achievement - State University (2015)",
-        "Employee of the Month - Tech Solutions Inc. (June 2021)",
-        "Best Web Design - State University Hackathon (2016)",
-        "Outstanding Academic Achievement - State University (2015)"
-
-    ],
-    projects: [
-        {
-            name: 'Brand Redesign 2024',
-            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
-            technologies: 'Adobe Creative Suite, Figma'
-        },
-        {
-            name: 'Marketing Automation Platform',
-            description: 'Implemented HubSpot automation for lead generation, resulting in 200% increase in qualified leads.',
-            technologies: 'HubSpot, CRM Integration'
-        },
-        {
-            name: 'Social Media Campaign',
-            description: 'Developed viral social media campaign reaching 1M+ users.',
-            technologies: 'Meta Business Suite, Hootsuite'
-        },
-        {
-            name: 'Brand Redesign 2024',
-            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
-            technologies: 'Adobe Creative Suite, Figma'
-        },
-        {
-            name: 'Brand Redesign 2024',
-            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
-            technologies: 'Adobe Creative Suite, Figma'
-        },
-        {
-            name: 'Brand Redesign 2024',
-            description: 'Led complete brand redesign for major client, resulting in 40% increase in engagement. Managed team of 5 designers.',
-            technologies: 'Adobe Creative Suite, Figma'
-        },
-    ],
-    experience: [
-        {
-            company: 'Borcelle Studio',
-            position: 'Marketing Manager & Specialist',
-            date: '2030 - PRESENT',
-            responsibilities: [
-                'Develop and execute comprehensive marketing strategies and campaigns that align with the company\'s goals and objectives.',
-                'Lead, mentor, and manage a high-performing marketing team, fostering a collaborative and results-driven work environment.',
-                'Monitor brand consistency across marketing channels and materials.',
-                'Manage annual marketing budget of $2M, optimizing ROI across all campaigns.',
-                'Coordinate with sales team to align marketing efforts with revenue goals.'
-            ]
-        },
-        {
-            company: 'Fauget Studio',
-            position: 'Marketing Manager & Specialist',
-            date: '2025 - 2029',
-            responsibilities: [
-                'Create and manage the marketing budget, ensuring efficient allocation of resources and optimizing ROI.',
-                'Oversee market research to identify emerging trends, customer needs, and competitor strategies.',
-                'Monitor brand consistency across marketing channels and materials.',
-                'Developed content strategy that increased website traffic by 150%.',
-                'Implemented marketing automation that reduced lead response time by 60%.'
-            ]
-        },
-        {
-            company: 'Studio Shodwe',
-            position: 'Marketing Manager & Specialist',
-            date: '2024 - 2025',
-            responsibilities: [
-                'Develop and maintain strong relationships with partners, agencies, and vendors to support marketing initiatives.',
-                'Monitor and maintain brand consistency across all marketing channels and materials.',
-                'Created and executed email marketing campaigns with 25% open rate.',
-                'Managed social media presence across 5 platforms.'
-            ]
-        },
-
-                {
-            company: 'Studio Shodwe',
-            position: 'Marketing Manager & Specialist',
-            date: '2024 - 2025',
-            responsibilities: [
-                'Develop and maintain strong relationships with partners, agencies, and vendors to support marketing initiatives.',
-                'Monitor and maintain brand consistency across all marketing channels and materials.',
-                'Created and executed email marketing campaigns with 25% open rate.',
-                'Managed social media presence across 5 platforms.'
-            ]
-        }
-
+// ==================== MAIN EXPORT ====================
+export async function generateAndUploadResume(data, templateType = 'two-column-modern', colors, userId = null) {
+    try {
+        // Merge user colors with defaults
+        const finalColors = { ...COLOR_SCHEMES.professional, ...colors };
         
-    ],
-    references: [
-        {
-            name: 'Estelle Darcy',
-            title: 'Wardiere Inc. / CTO',
-            phone: '123-456-7890',
-            email: 'hello@reallygreatsite.com'
-        },
-        {
-            name: 'Harper Richard',
-            title: 'Wardiere Inc. / CEO',
-            phone: '123-456-7890',
-            email: 'hello@reallygreatsite.com'
-        },
-        {
-            name: 'Michael Chen',
-            title: 'Borcelle Studio / Director',
-            phone: '123-456-7891',
-            email: 'michael@borcelle.com'
-        }
-    ]
+        // Create template instance
+        const template = ResumeTemplateFactory.createTemplate(templateType, finalColors);
+        
+        // Generate unique filename
+        const timestamp = Date.now();
+        const uniqueId = userId ? `${userId}_${timestamp}` : `${timestamp}_${Math.random().toString(36).substring(7)}`;
+        const fileName = `resumes/${uniqueId}.pdf`;
+        
+        // Generate and upload to S3
+        const result = await template.generateAndUpload(data, fileName);
+        
+        return {
+            success: true,
+            url: result.url,
+            fileName: result.fileName,
+            pages: result.pages
+        };
+    } catch (error) {
+        console.error('Error generating resume:', error);
+        throw error;
+    }
+}
+
+export const TEMPLATE_TYPES = {
+    MODERN: 'two-column-modern',
+    CLASSIC: 'single-column-classic'
 };
-
-// ==================== USAGE ====================
-
-console.log('Generating resumes with proper spacing...');
-
-// Generate modern two-column resume
-const modernTemplate = ResumeTemplateFactory.createTemplate('two-column-modern');
-modernTemplate.generate(sampleData, 'modern_resume_final.pdf');
-
-// Generate classic single-column resume
-const classicTemplate = ResumeTemplateFactory.createTemplate('single-column-classic');
-classicTemplate.generate(sampleData, 'classic_resume_final.pdf');
-
-console.log('✅ All resumes generated successfully!');
