@@ -271,8 +271,8 @@ window.addEventListener("DOMContentLoaded", async (e) => {
     if(user.data.resumeInfo[0].summary){
         updateSummaryInfoResume(user.data.resumeInfo[0].summary)
     }
-    if(user.data.resumeInfo[0].experiences){
-        updateExperienceInfoResume(user.data.resumeInfo[0].experiences)
+    if(user.data.resumeInfo[0].experience){
+        updateExperienceInfoResume(user.data.resumeInfo[0].experience)
     }
     if(user.data.resumeInfo[0].skills){
         updateSkillInfoResume(user.data.resumeInfo[0].skills)
@@ -286,7 +286,7 @@ window.addEventListener("DOMContentLoaded", async (e) => {
         updateCertificatesInfoResume(user.data.resumeInfo[0].certificates)
     }
     if(user.data.resumeInfo[0].awards){
-        updateAwardsInfoResume(user.data.resumeInfo[0].awards.title)
+        updateAwardsInfoResume(user.data.resumeInfo[0].awards)
     }
     if(user.data.resumeInfo[0].languages){
         updateLangauageInfoResume(user.data.resumeInfo[0].languages)
@@ -438,14 +438,12 @@ function updateLangauageInfoResume(response){
 
 
 function updateAwardsInfoResume(response){
-    const awards = response.split('\n').filter(award => award.trim());
-    console.log(awards, response)
     if( response){
         resumePreview.insertAdjacentHTML('beforeend', sectionTemplates.awards);
         const awardsList = document.getElementById('awardsList');
         awardsList.innerHTML = '';
 
-        awards.forEach(award => {
+        response.forEach(award => {
             if (award) {
                 const li = document.createElement('li');
                 li.textContent = award;
@@ -908,9 +906,21 @@ function generateId(category) {
 function createExperienceItem(jobTitle, company, duration, description, uid) {
     console.log(1)
     const experienceItem = document.createElement('div');
+    const experienceDescription = document.createElement("ul")
     experienceItem.className = 'experience-item';
+    experienceDescription.className = "experience-description"
+
+    description.forEach(desc=>{
+        console.log(desc)
+        const descriptionItem = document.createElement("li")
+        descriptionItem.textContent = desc
+        console.log(descriptionItem)
+        experienceDescription.appendChild(descriptionItem)
+    })
     experienceItem.dataset.id  = generateId("experience")
     experienceItem.id = uid;
+
+
 
     experienceItem.innerHTML = `
         <div class="experience-item-controls">
@@ -930,11 +940,11 @@ function createExperienceItem(jobTitle, company, duration, description, uid) {
         <h3 class="experience-title">${jobTitle}</h3>
         <div class="experience-company">${company}</div>
         <div class="experience-duration">${duration}</div>
-        <div class="experience-description">
-            <p>${description}</p>
-        </div>
     `;
+
+    experienceItem.appendChild(experienceDescription)
     
+
     // Add event listeners to the controls
     const moveUpBtn = experienceItem.querySelector('.move-up-btn-experience');
     const moveDownBtn = experienceItem.querySelector('.move-down-btn-experience');
@@ -1194,12 +1204,19 @@ async function updateExperience() {
     const company = document.getElementById('company').value;
     const duration = document.getElementById('jobDuration').value;
     const description = document.getElementById('editor').innerHTML;
+    const descriptionArr = description.replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')     
+    .replace(/<[^>]+>/g, '')       
+    .split('\n')                   
+    .map(item => item.trim())      
+    .filter(item => item.length > 0)
+    console.log(descriptionArr)
     const date = duration.split("-")
      const startDate = date[0]
      const endDate = date[1]
     // In a real app, you would update the specific experience item being edited
     // For this demo, we'll just update the first experience item
-    const newExperience = createExperienceItem(jobTitle, company, duration, description);
+    const newExperience = createExperienceItem(jobTitle, company, duration, descriptionArr);
      const expId = newExperience.getAttribute("data-id")
 
 
@@ -1208,9 +1225,11 @@ async function updateExperience() {
         company: company,
         startDate: startDate,
         endDate: endDate,
-        description: description,
+        description: descriptionArr,
         experienceId: expId
     }
+
+    console.log(obj)
     document.querySelector('#experienceSection .section-content').appendChild(newExperience);
 
     const token = localStorage.getItem("token")
@@ -1382,7 +1401,7 @@ async function updateAwards() {
     });
 
     let obj = {
-        awards: awardsInput
+        awards: awards
     }
     let token = localStorage.getItem("token")
 
@@ -1471,7 +1490,7 @@ async function updateProjects(){
 
     if(uid!="undefined"){
         const expItem = document.getElementById(uid)
-        const experience = response.data.result.experiences.find(exp => exp._id === uid);
+        const experience = response.data.result.experience.find(exp => exp._id === uid);
         expItem.querySelector('.experience-title').textContent = experience.role;
         // Update company
         expItem.querySelector('.experience-company').textContent = experience.company;
