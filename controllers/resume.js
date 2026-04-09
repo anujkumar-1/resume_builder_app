@@ -1,7 +1,8 @@
 import Resume from "../models/resumeBuilder.js"
 import User from "../models/user.js"
 import crypto from 'node:crypto';
-import {generateAndUploadResume} from "./helpers.js"
+// import {generateAndUploadResume} from "./helpers.js"
+import {generateAndUploadResume, TEMPLATE_TYPES, COLOR_SCHEMES} from "./resumeFactory.js"
 
 export const updateContactInfo = async (req, res) => {
     try {
@@ -43,7 +44,7 @@ export const updateExperience = async (req, res) => {
                 { user: req.user.userId },
                 {
                     $push: {
-                    experiences: {
+                    experience: {
                         role: title,
                         company: company,
                         startDate: startDate,
@@ -61,7 +62,7 @@ export const updateExperience = async (req, res) => {
         }
         else{
             const data = await Resume.create({user: req.user.userId,
-                experiences: [{
+                experience: [{
                     role: title,
                     company: company,
                     startDate: startDate,
@@ -371,20 +372,20 @@ export const updateEditExperience = async (req, res)=>{
             const result = await Resume.findOneAndUpdate(
                 {
                     "user": req.user.userId,
-                    "experiences._id": uid
+                    "experience._id": uid
                 },
                 {
                     $set: {
-                    "experiences.$.role": editJob,
-                    "experiences.$.company": editCompany,
-                    "experiences.$.startDate": startDate,
-                    "experiences.$.endDate": endDate,
-                    "experiences.$.description": editDescription
+                    "experience.$.role": editJob,
+                    "experience.$.company": editCompany,
+                    "experience.$.startDate": startDate,
+                    "experience.$.endDate": endDate,
+                    "experience.$.description": editDescription
                     }
                 },
                 {
                     returnDocument: 'after', // Return the updated document
-                    projection: { experiences: 1 } // Only return experiences array if needed
+                    projection: { experience: 1 } // Only return experiences array if needed
                 }
             );
 
@@ -397,20 +398,20 @@ export const updateEditExperience = async (req, res)=>{
             const result = await Resume.findOneAndUpdate(
                 {
                     "user": req.user.userId,
-                    "experiences.experienceId": id
+                    "experience.experienceId": id
                 },
                 {
                     $set: {
-                    "experiences.$.role": editJob,
-                    "experiences.$.company": editCompany,
-                    "experiences.$.startDate": startDate,
-                    "experiences.$.endDate": endDate,
-                    "experiences.$.description": editDescription
+                    "experience.$.role": editJob,
+                    "experience.$.company": editCompany,
+                    "experience.$.startDate": startDate,
+                    "experience.$.endDate": endDate,
+                    "experience.$.description": editDescription
                     }
                 },
                 {
                     returnDocument: 'after', // Return the updated document
-                    projection: { experiences: 1 } // Only return experiences array if needed
+                    projection: { experience: 1 } // Only return experiences array if needed
                 }
             );
 
@@ -493,16 +494,51 @@ export const downloadResume = async (req, res) => {
         // name
         const filename = `Resume-${req.user.name}-${uuid}.pdf`;
 
-        const resume = await Resume.findOne({ user: req.user.userId });
+        const resumeData = await Resume.findOne({ user: req.user.userId });
         const updatedUser = await User.findOne({ _id: req.user.userId });
-        console.log(resume, "resu")
         console.log(updatedUser, "updated")
+        console.log("resu", resumeData, updatedUser)
+        const mergedData = mergeUserWithResumeData(updatedUser, resumeData)
+        console.log("updatededr", mergedData)
 
-        const s3Data = await generateAndUploadResume(updatedUser, resume, filename)
+        const s3Data = await generateAndUploadResume(mergedData, "two-column-modern", COLOR_SCHEMES.modern, null)
         console.log("s3Data", s3Data);
 
-        res.status(200).json({resume, updatedUser, s3Data})
+        res.status(200).json({updatedUser, s3Data})
     } catch (error) {
         console.log(error)
     }
+}
+
+
+function mergeUserWithResumeData(userData, customResumeData) {
+    // Extract user info from the _doc property
+    const user = userData;
+    
+    // Create the resume data structure
+    const resumeData = {
+        personalInfo: {
+            name: user.username,
+            title: customResumeData.title || "Backend Engineer",
+            email: user.email,
+            phone: user.mobile,
+            location: user.location
+        },
+        contact: {
+            phone: user.mobile,
+            email: user.email,
+            address: user.location || '',
+        },
+        summary: customResumeData.summary,
+        education: customResumeData.education,
+        skills: customResumeData.skills,
+        languages: customResumeData.languages,
+        certificates: customResumeData.certificates,
+        awards: customResumeData.awards,
+        projects: customResumeData.projects,
+        experience: customResumeData.experience,
+        references: customResumeData.references
+    };
+    
+    return resumeData;
 }
