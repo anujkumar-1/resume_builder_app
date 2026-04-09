@@ -7,14 +7,14 @@ const resumeSchema = new mongoose.Schema({
     required: true
   },
   summary: String, // Single string value
-  experiences: [{ // Array of experiences
+  experience: [{ // Array of experiences
     role: String,
     company: String,
     location: String,
     startDate: String,
     endDate: String,
     current: Boolean,
-    description: String,
+    description: [String],
     experienceId: String
   }],
   education: [{ // Array of education entries
