@@ -112,11 +112,12 @@ async function handleCredentialResponse(response) {
     }
     console.log("Encoded JWT ID token: " + response.credential);
     const data = await axios.post(`${API_URL}/users/google-login`, obj)
-    if(data.status == 201){
+    if(data.status == 201 || data.status == 200){
         // new user
         localStorage.setItem("token", data.data.token)
     }
     window.location.href="./Resume"
+
 }
 
 window.onload = function () {
