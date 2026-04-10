@@ -36,12 +36,11 @@ export const googleSignup = async (req, res) =>{
             }
 
             const emailExist = await User.findOne({email: email})
-            if(!emailExist){
+            if(emailExist==null){
                 // user is new user confirmed
-                const user = await User.create({sub: sub, picture: payload.picture, given_name: payload.given_name, email:payload.email, username: payload.name })
+                const user = await User.create({sub: payload.sub, picture: payload.picture, given_name: payload.given_name, email:payload.email, username: payload.name })
                 return res.status(201).json({success: true, message: "User authorized successfully", token : generateAccessTokens(user._id, user.username, user.email)})
             }
-            console.log("emailExist", emailExist)
             // user is not new user 
             return res.status(200).json({success: true, message: "User authorized successfully"})
         }
@@ -73,15 +72,12 @@ export const googleLogin= async(req, res)=>{
             let email = payload.email
 
             const emailExist = await User.findOne({email: email})
-            console.log("emailExist1", emailExist)
             if(emailExist==null){
                 console.log("I am here", payload)
                 // user is new user confirmed
                 const user = await User.create({sub: payload.sub, picture: payload.picture, given_name: payload.given_name, email:payload.email, username: payload.name })
                 return res.status(201).json({success: true, message: "User authorized successfully", token : generateAccessTokens(user._id, user.username, user.email)})
             }
-            console.log("emailExist", emailExist)
-
             return res.status(200).json({success: true, message: "User authorized successfully", token: generateAccessTokens(emailExist._id, emailExist.username, emailExist.email)})
         }
 
