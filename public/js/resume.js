@@ -384,7 +384,8 @@ function updateSummaryInfoResume(response){
 
 
 function updateCertificatesInfoResume(response){
-    if( response){
+    console.log(response)
+    if(response.length!=0){
         let obj ={
             certificate: response
         }
@@ -401,16 +402,11 @@ function updateCertificatesInfoResume(response){
             }
         });
     }
-    else{
-        document.getElementById('certificatesSection').remove();
-
-
-    }
 }
 
 
 function updateLangauageInfoResume(response){
-    if( response){
+    if( response.length!=0){
         resumePreview.insertAdjacentHTML('beforeend', sectionTemplates.languages);
         const languagesList = document.getElementById('languagesList');
         languagesList.innerHTML = '';
@@ -430,15 +426,12 @@ function updateLangauageInfoResume(response){
         }
         localStorage.setItem("langInfo", JSON.stringify(obj));
     }
-    else{
-        document.getElementById('languagesSection').remove();
-
-    }
 }
 
 
 function updateAwardsInfoResume(response){
-    if( response){
+    console.log(response);
+    if( response.length!=0){
         resumePreview.insertAdjacentHTML('beforeend', sectionTemplates.awards);
         const awardsList = document.getElementById('awardsList');
         awardsList.innerHTML = '';
@@ -457,17 +450,11 @@ function updateAwardsInfoResume(response){
         localStorage.setItem("awardsInfo", JSON.stringify(obj));
 
     }
-    else{
-        document.getElementById('awardsSection').remove();
-
-
-    } 
-    
 }
 
 function updateIntrestInfoResume(response){
 
-    if(response){
+    if(response.length!=0){
         const intrests = response.split(',').map(intrest => intrest.trim());
         resumePreview.insertAdjacentHTML('beforeend', sectionTemplates.intrests);
 
