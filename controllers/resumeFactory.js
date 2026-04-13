@@ -92,6 +92,32 @@ export const COLOR_SCHEMES = {
     }
 };
 
+
+const colorToSchemeMap = {
+    "#2C3E50": "professional",
+    "#1A1A2E": "elegant",
+    "#0F172A": "modern",
+    "#6B21A5": "creative",
+    "#1E3A8A": "corporate",
+    "#000000": "minimal"
+};
+
+
+const getSchemeFromColor = (selectedColor) => {
+    // First check primary colors
+    if (colorToSchemeMap[selectedColor]) {
+        return colorToSchemeMap[selectedColor];
+    }
+    return "professional";
+
+}
+
+function getResumeColorScheme(selectedColor) {
+    const schemeName = getSchemeFromColor(selectedColor);
+    return COLOR_SCHEMES[schemeName];
+}
+
+
 // ==================== BASE CLASS ====================
 class BaseResumeTemplate {
     constructor(colors, config = {}) {
@@ -979,76 +1005,105 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
     }
 
     drawExperience(experiences, startY) {
-        let y = startY;
-        
-        this.doc
-            .fillColor(this.colors.primary)
-            .fontSize(16)
-            .font(this.config.fonts.header)
-            .text('WORK EXPERIENCE', this.contentX, y);
-        
-        y += 25;
-        
-        experiences.forEach((exp) => {
-            let expHeight = 40;
-            exp.description.forEach(resp => {
-                expHeight += this.calculateTextHeight(`• ${resp}`, {
-                    width: this.contentWidth - 20,
-                    fontSize: 10
-                }) + 4;
-            });
-            
-            if (y + expHeight > this.pageHeight - this.margins.bottom) {
-                this.addNewPage();
-                y = this.margins.top;
-            }
-            
-            this.doc
-                .fillColor(this.colors.primary)
-                .fontSize(14)
-                .font(this.config.fonts.subheader)
-                .text(exp.company, this.contentX, y);
-            
-            const dateWidth = this.doc.widthOfString(exp.date);
-            this.doc
-                .fillColor(this.colors.secondary)
-                .fontSize(12)
-                .font(this.config.fonts.subheader)
-                .text(exp.date, this.contentX + this.contentWidth - dateWidth, y);
-            
-            y += 20;
-            
-            this.doc
-                .fillColor(this.colors.secondary)
-                .fontSize(12)
-                .font(this.config.fonts.italic)
-                .text(exp.position, this.contentX, y);
-            
-            y += 18;
-            
-            exp.description.forEach(resp => {
-                const respHeight = this.calculateTextHeight(`• ${resp}`, {
-                    width: this.contentWidth - 20,
-                    fontSize: 10
-                });
-                
-                this.doc
-                    .fillColor(this.colors.text)
-                    .fontSize(10)
-                    .font(this.config.fonts.body)
-                    .text(`• ${resp}`, this.contentX + 10, y, {
-                        width: this.contentWidth - 20,
-                        lineGap: 2
-                    });
-                
-                y += respHeight + 4;
-            });
-            
-            y += 20;
-        });
-        
+    let y = startY;
+    
+    this.doc
+        .fillColor(this.colors.primary)
+        .fontSize(16)
+        .font(this.config.fonts.header)
+        .text('WORK EXPERIENCE', this.contentX, y);
+    
+    y += 25;
+    
+    // Add validation
+    if (!experiences || !Array.isArray(experiences)) {
         return y;
     }
+    
+    experiences.forEach((exp) => {
+        // Handle both data structures (startDate/endDate or date)
+        const startDate = exp.startDate || '';
+        const endDate = exp.endDate || '';
+        const dateText = exp.date || `${startDate} - ${endDate}`.trim();
+        
+        // Ensure finalDateText is always a string
+        let finalDateText = 'Date not specified';
+        if (dateText && dateText !== ' - ' && dateText !== '-') {
+            finalDateText = dateText;
+        }
+        
+        // Handle role/position
+        const roleText = exp.role || exp.position || 'Position not specified';
+        
+        // Handle description/responsibilities
+        const description = exp.description || exp.responsibilities || [];
+        
+        let expHeight = 40;
+        description.forEach(desc => {
+            expHeight += this.calculateTextHeight(`• ${desc}`, {
+                width: this.contentWidth - 20,
+                fontSize: 10
+            }) + 4;
+        });
+        
+        if (y + expHeight > this.pageHeight - this.margins.bottom) {
+            this.addNewPage();
+            y = this.margins.top;
+        }
+        
+        // Company name
+        const companyName = exp.company || 'Not Specified';
+        this.doc
+            .fillColor(this.colors.primary)
+            .fontSize(14)
+            .font(this.config.fonts.subheader)
+            .text(companyName, this.contentX, y);
+        
+        // Date - with safety check
+        if (finalDateText && finalDateText !== 'Date not specified') {
+            const dateWidth = this.doc.widthOfString(finalDateText);
+            this.doc
+                .fillColor(this.colors.secondary)
+                .fontSize(12)
+                .font(this.config.fonts.subheader)
+                .text(finalDateText, this.contentX + this.contentWidth - dateWidth, y);
+        }
+        
+        y += 20;
+        
+        // Role/Position
+        this.doc
+            .fillColor(this.colors.secondary)
+            .fontSize(12)
+            .font(this.config.fonts.italic)
+            .text(roleText, this.contentX, y);
+        
+        y += 18;
+        
+        // Description bullets
+        description.forEach(desc => {
+            const descHeight = this.calculateTextHeight(`• ${desc}`, {
+                width: this.contentWidth - 20,
+                fontSize: 10
+            });
+            
+            this.doc
+                .fillColor(this.colors.text)
+                .fontSize(10)
+                .font(this.config.fonts.body)
+                .text(`• ${desc}`, this.contentX + 10, y, {
+                    width: this.contentWidth - 20,
+                    lineGap: 2
+                });
+            
+            y += descHeight + 4;
+        });
+        
+        y += 20;
+    });
+    
+    return y;
+}
 
     drawEducation(education, startY) {
         let y = startY;
@@ -1357,9 +1412,9 @@ class SingleColumnClassicTemplate extends BaseResumeTemplate {
 class ResumeTemplateFactory {
     static createTemplate(type, colors, config = {}) {
         switch(type) {
-            case 'two-column-modern':
+            case 'modern-theme':
                 return new TwoColumnModernTemplate(colors, config);
-            case 'single-column-classic':
+            case 'classic-theme':
                 return new SingleColumnClassicTemplate(colors, config);
             default:
                 throw new Error(`Unknown template type: ${type}`);
@@ -1368,13 +1423,10 @@ class ResumeTemplateFactory {
 }
 
 // ==================== MAIN EXPORT ====================
-export async function generateAndUploadResume(data, templateType = 'two-column-modern', colors, userId = null) {
+export async function generateAndUploadResume(data, templateType = 'two-column-modern', themeColor, userId = null) {
     try {
-        // Merge user colors with defaults
-        const finalColors = { ...COLOR_SCHEMES.professional, ...colors };
-        
         // Create template instance
-        const template = ResumeTemplateFactory.createTemplate(templateType, finalColors);
+        const template = ResumeTemplateFactory.createTemplate(templateType, themeColor);
         
         // Generate unique filename
         const timestamp = Date.now();
