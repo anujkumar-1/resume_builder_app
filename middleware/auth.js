@@ -5,11 +5,10 @@ const auth = async (req, res, next)=>{
     try {
         const Authtoken = req.header("Authorization")
         if(Authtoken){
-            const token = Authtoken.split(' ')[1]; // Extract token after "Bearer "
+            const token = Authtoken.split(' ')[1];
             const user= jwt.verify(Authtoken, process.env.JWT_TOKEN_SECRET, (err, user)=>{
                 if(err){
                     return res.sendStatus(403); // Invalid token
-
                 }
                 req.user = user;
                 console.log("user", user)
