@@ -2,7 +2,59 @@ import Resume from "../models/resumeBuilder.js"
 import User from "../models/user.js"
 import crypto from 'node:crypto';
 // import {generateAndUploadResume} from "./helpers.js"
-import {generateAndUploadResume, TEMPLATE_TYPES, COLOR_SCHEMES} from "./resumeFactory.js"
+import {generateAndUploadResume, TEMPLATE_TYPES} from "./resumeFactory.js"
+
+export const COLOR_SCHEMES = {
+    professional: {
+        primary: '#2C3E50',
+        secondary: '#E67E22',
+        text: '#333333',
+        lightBg: '#F5F7FA',
+        border: '#E0E0E0',
+        white: '#FFFFFF'
+    },
+    elegant: {
+        primary: '#1A1A2E',
+        secondary: '#C4A484',
+        text: '#2D2D2D',
+        lightBg: '#F8F4F0',
+        border: '#D4C5B0',
+        white: '#FFFFFF'
+    },
+    modern: {
+        primary: '#0F172A',
+        secondary: '#3B82F6',
+        text: '#1E293B',
+        lightBg: '#F8FAFC',
+        border: '#CBD5E1',
+        white: '#FFFFFF'
+    },
+    creative: {
+        primary: '#6B21A5',
+        secondary: '#EC4899',
+        text: '#1F2937',
+        lightBg: '#FAF5FF',
+        border: '#E9D5FF',
+        white: '#FFFFFF'
+    },
+    corporate: {
+        primary: '#1E3A8A',
+        secondary: '#F59E0B',
+        text: '#111827',
+        lightBg: '#EFF6FF',
+        border: '#BFDBFE',
+        white: '#FFFFFF'
+    },
+    minimal: {
+        primary: '#000000',
+        secondary: '#666666',
+        text: '#333333',
+        lightBg: '#FAFAFA',
+        border: '#EEEEEE',
+        white: '#FFFFFF'
+    }
+};
+
 
 export const updateContactInfo = async (req, res) => {
     try {
@@ -10,6 +62,9 @@ export const updateContactInfo = async (req, res) => {
         const email = req.body.email
         const phone = req.body.phone
 
+        if(!name || !email || !phone) {
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
 
         const updatedUser = await User.findOneAndUpdate(
             { _id: req.user.userId }, 
@@ -33,8 +88,11 @@ export const updateContactInfo = async (req, res) => {
 export const updateExperience = async (req, res) => {
     try {
         const {title, company, startDate, endDate, description, experienceId} = req.body
-        console.log(title, company, startDate, endDate, description, experienceId)
         const isCurrentPosition = endDate === "present";
+
+        if(!title || !company || !startDate || !endDate || !description){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
 
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
         
@@ -85,7 +143,9 @@ export const updateExperience = async (req, res) => {
 export const updateSkills = async (req, res) => {
     try {
         const skill = req.body.skill
-
+        if(!skill){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
 
         if (userAlreadyExist.length >0) {
@@ -108,7 +168,7 @@ export const updateSkills = async (req, res) => {
             res.status(201).json({data})
         }
     } catch (error) {
-        console.log(error)
+        res.status(500).json({success: false, message: "Internal Server Error, Please Try Again Later"})
     }
 }
 
@@ -116,6 +176,9 @@ export const updateEducation = async (req, res) => {
     try {
         const {degree, institution, duration, id} = req.body
 
+        if(!degree || !institution || !duration || !id){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
 
         if (userAlreadyExist.length >0) {
@@ -148,7 +211,7 @@ export const updateEducation = async (req, res) => {
             res.status(201).json({data})
         }
     } catch (error) {
-        console.log(error)
+        res.status(500).json({success: false, message: "Internal Server Error, Please Try Again Later"})
     }
 }
 
@@ -157,6 +220,9 @@ export const updateSummary = async (req, res) => {
     try {
         const {summary} = req.body
 
+        if(!summary){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
 
         if (userAlreadyExist.length > 0) {
@@ -176,7 +242,7 @@ export const updateSummary = async (req, res) => {
             res.status(201).json({data})
         }
     } catch (error) {
-        console.log(error)
+        res.status(500).json({success: false, message: "Internal Server Error, Please Try Again Later"})
     }
 }
 
@@ -185,6 +251,9 @@ export const updateSummary = async (req, res) => {
 export const updateLanguages = async (req, res) => {
     try {
         const {language} = req.body
+        if(!language){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
 
         if (userAlreadyExist.length >0) {
@@ -207,7 +276,7 @@ export const updateLanguages = async (req, res) => {
             res.status(201).json({data})
         }
     } catch (error) {
-        console.log(error)
+        res.status(500).json({success: false, message: "Internal Server Error, Please Try Again Later"})
     }
 }
 
@@ -215,7 +284,9 @@ export const updateLanguages = async (req, res) => {
 export const updateCertificates = async (req, res) => {
     try {
         const {certificate} = req.body
-
+        if(!certificate){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
 
         if (userAlreadyExist.length >0) {
@@ -238,7 +309,7 @@ export const updateCertificates = async (req, res) => {
             res.status(201).json({data})
         }
     } catch (error) {
-        console.log(error)
+        res.status(500).json({success: false, message: "Internal Server Error, Please Try Again Later"})
     }
 }
 
@@ -246,7 +317,9 @@ export const updateCertificates = async (req, res) => {
 export const updateAwards = async (req, res) => {
     try {
         const {awards} = req.body
-
+        if(!awards){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
 
         if (userAlreadyExist.length >0) {
@@ -269,14 +342,16 @@ export const updateAwards = async (req, res) => {
             res.status(201).json({data})
         }
     } catch (error) {
-        console.log(error)
+        res.status(500).json({success: false, message: "Internal Server Error, Please Try Again Later"})
     }
 }
 
 export const updateIntrest = async (req, res) =>{
     try {
         const intrest = req.body.intrest
-        console.log(intrest)
+        if(!intrest){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
         const userAlreadyExist = await Resume.find({user: req.user.userId });
 
         if (userAlreadyExist.length >0) {
@@ -299,14 +374,16 @@ export const updateIntrest = async (req, res) =>{
             res.status(201).json({data})
         }
     } catch (error) {
-        console.log(error)
+        res.status(500).json({success: false, message: "Internal Server Error, Please Try Again Later"})
     }
 }
 
 export const updateProjects = async (req, res) => {
     try {
         const {title, summary, startDate, endDate, description, projectId} = req.body
-        console.log(title, summary, startDate, endDate, description, projectId)
+        if(!title || !summary || !startDate || !endDate || !description || !projectId){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
 
         const userAlreadyExist = await Resume.find({ user: req.user.userId });
         
@@ -346,7 +423,7 @@ export const updateProjects = async (req, res) => {
 
         }    
     }catch (error) {
-        console.log(error)
+        res.status(500).json({success: false, message: "Internal Server Error, Please Try Again Later"})
     }
 }
 
@@ -358,14 +435,17 @@ export const getResumeInfo = async (req, res)=>{
         res.status(200).json({userInfo: response, resumeInfo: resume})
         
     } catch (error) {
-        console.log(error)
+        res.status(500).json({success: false, message: "Internal Server Error, Please Try Again Later"})
     }
 }
 
 export const updateEditExperience = async (req, res)=>{
     try {
         const {editJob, editCompany, startDate, endDate, editDescription, id, uid} = req.body
-        console.log(editJob, editCompany, startDate, endDate, editDescription, id, "Abc")
+
+        if(!editJob || !editCompany || !startDate || !endDate || !editDescription || !id || !uid){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
         // This will update the matching experience without needing to know its index
 
         if(uid != "undefined"){
@@ -432,7 +512,9 @@ export const updateEditExperience = async (req, res)=>{
 export const updateEditEducation = async (req, res)=>{
     try {
         const {editDegree, editInstitution,editDuration , id, euid} = req.body
-        console.log(editDegree, editInstitution, editDuration, id, euid)
+        if(!editJob || !editInstitution || !editDuration  || !id || !euid){
+            res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
+        }
 
         if(euid != "undefined"){
             const result = await Resume.findOneAndUpdate(
@@ -484,29 +566,25 @@ export const updateEditEducation = async (req, res)=>{
             res.status(200).json({ message: "education updated successfully",result})
         }
     } catch (error) {
-        console.log(error)
+        res.status(500).json({ message: "Failed to update Education" });
     }
 }
 
 export const downloadResume = async (req, res) => {
     try {
         const uuid = crypto.randomUUID();
+        const color = req.query.color
+        const theme = req.query.theme
+        console.log(color, COLOR_SCHEMES[color])
         // name
         const filename = `Resume-${req.user.name}-${uuid}.pdf`;
-
         const resumeData = await Resume.findOne({ user: req.user.userId });
         const updatedUser = await User.findOne({ _id: req.user.userId });
-        console.log(updatedUser, "updated")
-        console.log("resu", resumeData, updatedUser)
         const mergedData = mergeUserWithResumeData(updatedUser, resumeData)
-        console.log("updatededr", mergedData)
-
-        const s3Data = await generateAndUploadResume(mergedData, "two-column-modern", COLOR_SCHEMES.modern, null)
-        console.log("s3Data", s3Data);
-
+        const s3Data = await generateAndUploadResume(mergedData, theme, COLOR_SCHEMES[color], null)
         res.status(200).json({updatedUser, s3Data})
     } catch (error) {
-        console.log(error)
+        res.status(500).json({ message: "Internal server error, please try again later" });
     }
 }
 
