@@ -25,7 +25,7 @@ export const googleSignup = async (req, res) =>{
         const payload = ticket.getPayload();
 
         if (!payload) {
-            throw new Error('Verification succeeded but payload is missing.');
+          return res.status(400).json({success: false, message: "Bad Request"})
         }
     
         if (payload) {
@@ -42,7 +42,7 @@ export const googleSignup = async (req, res) =>{
                 return res.status(201).json({success: true, message: "User authorized successfully", token : generateAccessTokens(user._id, user.username, user.email)})
             }
             // user is not new user 
-            return res.status(200).json({success: true, message: "User authorized successfully"})
+            return res.status(200).json({success: true, message: "User authorized successfully", token: generateAccessTokens(emailExist._id, emailExist.username, emailExist.email)})
         }
 
     } catch (error) {
