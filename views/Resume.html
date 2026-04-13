@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="./styles/resume.css">
 </head>
 <body>
+
     <!-- Navbar -->
     <nav class="navbar">
         <!-- Logo -->
@@ -78,6 +79,8 @@
             <i class="fas fa-bars"></i>
         </button>
     </nav>
+    <div id="toast-container"></div>
+
     
     <!-- Mobile Navigation -->
     <div class="mobile-nav">
@@ -721,28 +724,27 @@ Outstanding Academic Achievement - State University (2015)</textarea>
                 <button class="modal-close" id="closeTemplatesModal">&times;</button>
             </div>
             <div class="templates-grid" id="templates-grid"> 
-
                    <!-- color gradient -->
+                <div id="color-gradient" class="color-gradient">
+                    <!-- color picker -->
+                    <p class="color-gradient-title">Template Color Picker</p>  
+                </div>
 
-                   <div id="color-gradient" class="color-gradient">
-                        <!-- color picker -->
-                         
-                   </div>
-
+                <div class="all-templates-themes" id="all-templates-themes">
                     <div class="template-card modern-theme">
+                        <p>Modern Sample Template</p>
                         <input type="radio" name="template-picker" id="modern" value="modern">
                         <label for="modern"></label>
-                        <img src="/Assets/two-column-color.jpg" alt="Modern template with sidebar colored" srcset="">
-                        <p>Modern Template</p>
+                        <img src="/Assets/two-column-color.jpg" id="modern-theme" alt="Modern template with sidebar colored" srcset="">
                     </div>
-
-
                     <div class="template-card classic-theme">
+                        <p>Classic Sample Template</p>
                         <input type="radio" name="template-picker" id="classic" value="classic">
                         <label for="classic"></label>
-                        <img src="/Assets/classic.jpg" alt="Modern template with sidebar colored" srcset="">
-                        <p>Classic Template</p>
-                    </div>                    
+                        <img src="/Assets/classic.jpg" id="classic-theme" alt="Modern template with sidebar colored" srcset="">
+                    </div>    
+                
+                </div>
             </div>
 
             <div class="form-actions" style="margin-top: 20px;">
