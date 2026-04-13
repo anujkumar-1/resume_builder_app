@@ -13,16 +13,12 @@ export const forgetPassword = async(req, res)=>{
         if(!verifiedEmail){
             res.status(422).json({success: false, message: "Invalid Email Address"})
         }
-        console.log(1)
         const userAlreadyExist = await User.find({ email: email });
-        console.log(userAlreadyExist)
-        if(!userAlreadyExist){
+        if(userAlreadyExist.length==0){
             res.status(404).json({success: false, message: "User not found, try again"})
         }
         const id = crypto.randomUUID();
-        console.log(id, req.user.userId)
         const response = await ForgetPassword.insertOne({uid: id, userId: req.user.userId, isActive: true})
-        console.log(response)
         
         const msg = await sendEmail(id);
         res.status(200).json({success: true, message: msg})
@@ -156,8 +152,8 @@ let htmlContent = `
     const info = await transporter.sendMail({
       from: '"MyJobCV Support" <mail@myjobcv.online>',
       to: "anujjaws@gmail.com", 
-      subject: "Hello from myjobcv.online! 🚀",
-      text: "This is a test email sent via Nodemailer and AWS SES.",
+      subject: "Reset your MyJobCV password",
+      text: "The password reset link is below !!!",
       html: htmlContent,
     });
 
@@ -172,13 +168,12 @@ let htmlContent = `
 export const resetPassword = async (req, res) => {
     try {
         const uid = req.params.id
-        console.log(uid)
         if(!uid){
             res.status(400).json({success: false, message: "Bad Request"})
         }
         const Fpid = await ForgetPassword.findOne({uid: uid})
         if(!Fpid){
-            res.status(404).json({success: false, message: "Id not found"})
+            res.status(404).json({success: false, message: "Bad Id"})
         }
         if(Fpid){
             await Fpid.updateOne({isActive: false})
@@ -480,8 +475,6 @@ export const updatePassword = async(req, res)=>{
     const saltrounds = 10
     const newPassword = req.body.resetPassword
     const isVerified = validatePassword(newPassword)
-    console.log(newPassword, isVerified)
-
     const uuid = req.params.resetpasswordid
     if(!newPassword){
         res.status(400).json({success: false, message: "null new password, try again"})
