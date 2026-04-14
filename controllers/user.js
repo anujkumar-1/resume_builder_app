@@ -118,6 +118,19 @@ export const login = async (req, res)=>{
     }
 }
 
+export const authenticate = async (req, res)=>{
+    try {
+        const userAlreadyExist = await User.findOne({ _id: req.user.userId });
+        if(!userAlreadyExist){
+            return res.status(404).json({success: false, message: "Incorrect Token"})
+        }
+        if(userAlreadyExist){
+            return res.status(200).json({success: true, message: "Authentication Successful"})
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error during authentication" });
+    }
+}
 
 function validateEmail(email) {
   const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
