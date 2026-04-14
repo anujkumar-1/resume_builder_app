@@ -188,6 +188,29 @@ const sectionTemplates = {
 };
 
 
+function showToast(message) {
+    const container = document.getElementById('toast-container');
+    
+    const toast = document.createElement('div');
+    toast.classList.add('toast');
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        
+        setTimeout(() => {
+            container.removeChild(toast);
+        }, 500);
+    }, 3000); 
+}
+
 
 // Mobile Menu Toggle
 const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
@@ -197,10 +220,8 @@ const overlay = document.querySelector('.resume-overlay');
 const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
 const editExperiencemodal = document.getElementById('editExperienceModal');
 const editEducationModal = document.getElementById('editEducationModal');
-const templateCard = document.querySelectorAll(".template-card")
 const closeModalBtn = document.getElementById('closeModal');
 const cancelBtn = document.getElementById('cancelEdit');
-console.log(templateCard)
 
 let currentlyEditingExperience = null;
 
@@ -252,7 +273,13 @@ const intrestToggle = document.getElementById('intrestToggle');
 const projectToggle = document.getElementById('projectToggle');
 
 
-// up-down buttons
+
+// template theme
+let arr = ["#2C3E50", "#1A1A2E", "#0F172A", "#6B21A5", "#1E3A8A", "#000000"]
+const colorTheme = ["professional", "elegant", "modern", "creative", "corporate", "minimal"]
+const colorGradient = document.getElementById("color-gradient")
+const allTemplatesTheme = document.getElementById("all-templates-themes")
+
 
 const moveUpButton = document.querySelectorAll(".move-up-btn");
 console.log(moveUpButton)
@@ -795,11 +822,14 @@ document.querySelectorAll('.template-card').forEach(card => {
 
 document.getElementById('applyTemplate').addEventListener('click', function() {
     const selectedTemplate = document.querySelector('.template-card.selected');
-    if (selectedTemplate) {
-        alert(`Applying ${selectedTemplate.querySelector('.template-name').textContent} template`);
+    const selectedColor = localStorage.getItem("theme-primary-color")
+    
+    if (selectedTemplate && selectedColor) {
         toggleModal(templatesModal);
-    } else {
-        alert('Please select a template first');
+    } 
+
+    else {
+        alert('Please select a template or a theme color first');
     }
 });
 
@@ -1677,29 +1707,79 @@ function moveSectionDown(section) {
 async function downloadResume() {
     try {
         const token = localStorage.getItem("token")
-        const resume = await axios.get(`${API_URL}/resume/downloadResume`, {headers:{Authorization: token}})
+        if(!token){
+            showToast("Not Authenticated, Login again")
+            setTimeout(()=>{
+            window.location.href="./login"
+            }, 2000)
+        }
+
+        let selectedColor = localStorage.getItem("theme-primary-color") || "corporate";
+        let theme = localStorage.getItem("theme") || "modern-theme"
+
+
+
+        const resume = await axios.get(`${API_URL}/resume/downloadResume`, {
+            params: {
+                color: selectedColor,
+                theme: theme
+            },
+            headers: {
+                Authorization: token
+            },
+        });
+
         console.log(resume)
+
+        if(resume.status === 200){
+            console.log(resume.data.s3Data.url, resume.data.s3Data.fileName)
+            downloadFile(resume.data.s3Data.url, resume.data.s3Data.fileName)
+        }
+
     } catch (error) {
+
     }
-    // In a real application, you would generate a PDF here
-    // This could be done with libraries like jsPDF or html2pdf
+}
+
+function downloadFile(url, fileName) {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName; // Suggests a filename to the browser
+  link.target = '_blank'; 
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link); // Cleanup
+}
+
+async function downloadPDF(url, fileName) {
+  try {
+    // 1. Fetch the file data
+    const response = await fetch(url);
+    const blob = await response.blob();
+    
+    // 2. Create a local URL for the blob
+    const blobUrl = window.URL.createObjectURL(blob);
+    
+    // 3. Create a hidden link and trigger download
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName || 'document.pdf';
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    // 4. Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl); // Free up memory
+  } catch (error) {
+    console.error('Download failed:', error);
+  }
 }
 
 
 
-// templates 
-
-
-templateCard.forEach((template)=>{
-    template.addEventListener("click", (e)=>{
-        console.log(e.target.id)
-    })
-})
-
-let arr = ["#2C3E50", "#34495E", "#003366", "#1A5276", "#4A4A4A", "#2E4053", "#0E6655", "#7B241C"]
-const colorGradient = document.getElementById("color-gradient")
 arr.forEach((color, index)=>{
-    const id = `color-${index}`
+    const id = `${colorTheme[index]}`
     let radio = document.createElement("input")
     radio.type = "radio";
     radio.name = "colorpicker";
@@ -1716,7 +1796,23 @@ arr.forEach((color, index)=>{
 })
  
 colorGradient.addEventListener("click", (target)=>{
-    console.log(target.target.id)
-    const selectedColor = document.getElementById(target.target.value)
-    
+    const selectedColor = target.target.id
+    console.log(selectedColor)
+    localStorage.setItem("theme-primary-color", selectedColor)
+})
+
+
+allTemplatesTheme.addEventListener("click", (event)=>{
+    const selectedTheme = event.target.id
+    console.log(selectedTheme)
+    localStorage.setItem("theme", selectedTheme)
+    switch(selectedTheme) {
+        case 'modern-theme':
+            document.getElementById("modern").checked = true
+            break;
+        case 'classic-theme':
+            document.getElementById("classic").checked = true
+            break;
+        
+    }
 })
