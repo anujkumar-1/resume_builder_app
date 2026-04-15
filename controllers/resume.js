@@ -1,6 +1,8 @@
 import Resume from "../models/resumeBuilder.js"
 import User from "../models/user.js"
 import crypto from 'node:crypto';
+import mongoose from 'mongoose';
+
 // import {generateAndUploadResume} from "./helpers.js"
 import {generateAndUploadResume, TEMPLATE_TYPES} from "./resumeFactory.js"
 
@@ -588,7 +590,135 @@ export const downloadResume = async (req, res) => {
     }
 }
 
+export const deleteEduItem = async(req, res)=>{
+    try {
+        const {id, fallbackId} = req.body
+        console.log(id, fallbackId)
+        if (id && mongoose.Types.ObjectId.isValid(id)) {
+            const result = await Resume.updateOne(
+                {"user": req.user.userId},
+                { 
+                    $pull: { 
+                        education: { "_id":  new mongoose.Types.ObjectId(id)} 
+                    } 
+                }
+            )
 
+            if(result.modifiedCount ==0){
+                return res.status(404).send("Item not found or already deleted.");
+            }
+            return res.status(200).send("Item removed successfully.");
+
+        }
+        else if (fallbackId) {
+            const result = await Resume.updateOne(
+                {"user": req.user.userId},
+                { 
+                    $pull: { 
+                        education: { "educationId":  fallbackId} 
+                    } 
+                }
+            )
+
+            if(result.modifiedCount ==0){
+                return res.status(404).send("Item not found or already deleted.");
+            }
+            return res.status(200).send("Item removed successfully.");
+        }
+        return res.status(400).json({ message: "No valid IDs provided" });
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Internal server error.");
+    }
+}
+
+export const deleteExpItem = async(req, res)=>{
+    try {
+        const {id, fallbackId} = req.body
+        console.log(id, fallbackId)
+        if (id && mongoose.Types.ObjectId.isValid(id)) {
+            const result = await Resume.updateOne(
+                {"user": req.user.userId},
+                { 
+                    $pull: { 
+                        experience: { "_id":  new mongoose.Types.ObjectId(id)} 
+                    } 
+                }
+            )
+
+            if(result.modifiedCount ==0){
+                return res.status(404).send("Item not found or already deleted.");
+            }
+            return res.status(200).send("Item removed successfully.");
+
+        }
+        else if (fallbackId) {
+            const result = await Resume.updateOne(
+                {"user": req.user.userId},
+                { 
+                    $pull: { 
+                        experience: { "experienceId":  fallbackId} 
+                    } 
+                }
+            )
+
+            if(result.modifiedCount ==0){
+                return res.status(404).send("Item not found or already deleted.");
+            }
+            return res.status(200).send("Item removed successfully.");
+        }
+        return res.status(400).json({ message: "No valid IDs provided" });
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Internal server error.");
+    }
+}
+
+
+export const deleteProjectItem= async(req, res)=>{
+    try {
+        const {id, fallbackId} = req.body
+        console.log(id, fallbackId)
+        if (id && mongoose.Types.ObjectId.isValid(id)) {
+            const result = await Resume.updateOne(
+                {"user": req.user.userId},
+                { 
+                    $pull: { 
+                        projects: { "_id":  new mongoose.Types.ObjectId(id)} 
+                    } 
+                }
+            )
+
+            if(result.modifiedCount ==0){
+                return res.status(404).send("Item not found or already deleted.");
+            }
+            return res.status(200).send("Item removed successfully.");
+
+        }
+        else if (fallbackId) {
+            const result = await Resume.updateOne(
+                {"user": req.user.userId},
+                { 
+                    $pull: { 
+                        projects: { "projectId":  fallbackId} 
+                    } 
+                }
+            )
+
+            if(result.modifiedCount ==0){
+                return res.status(404).send("Item not found or already deleted.");
+            }
+            return res.status(200).send("Item removed successfully.");
+        }
+        return res.status(400).json({ message: "No valid IDs provided" });
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Internal server error.");
+    }
+}
 function mergeUserWithResumeData(userData, customResumeData) {
     // Extract user info from the _doc property
     const user = userData;
