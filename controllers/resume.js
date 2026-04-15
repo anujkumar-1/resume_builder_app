@@ -381,7 +381,8 @@ export const updateIntrest = async (req, res) =>{
 export const updateProjects = async (req, res) => {
     try {
         const {title, summary, startDate, endDate, description, projectId} = req.body
-        if(!title || !summary || !startDate || !endDate || !description || !projectId){
+        console.log(title, summary, startDate, endDate, description, projectId)
+        if(!title || !summary || !startDate || !description || !projectId){
             res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
         }
 
@@ -491,7 +492,7 @@ export const updateEditExperience = async (req, res)=>{
                 },
                 {
                     returnDocument: 'after', // Return the updated document
-                    projection: { experience: 1 } // Only return experiences array if needed
+                    projection: { experience: 1} // Only return experiences array if needed
                 }
             );
 
@@ -512,10 +513,10 @@ export const updateEditExperience = async (req, res)=>{
 export const updateEditEducation = async (req, res)=>{
     try {
         const {editDegree, editInstitution,editDuration , id, euid} = req.body
-        if(!editJob || !editInstitution || !editDuration  || !id || !euid){
+        console.log(editDegree, editInstitution, editDuration, id, euid)
+        if(!editDegree || !editInstitution || !editDuration  || !id || !euid){
             res.status(400).json({success: false, message: "Bad Request, Parameter missing"})
         }
-
         if(euid != "undefined"){
             const result = await Resume.findOneAndUpdate(
                 {
@@ -559,7 +560,6 @@ export const updateEditEducation = async (req, res)=>{
                     projection: { education: 1 } // Only return experiences array if needed
                 }
             );
-
             if (result.matchedCount === 0) {
                 return res.status(404).json({ message: "education not found" });
             }
