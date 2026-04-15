@@ -1,4 +1,4 @@
-import {updateContactInfo, updateExperience, updateSkills, updateEducation, updateSummary, updateLanguages, updateCertificates, updateAwards, getResumeInfo,  updateEditExperience, updateEditEducation, downloadResume, updateIntrest, updateProjects} from "../controllers/resume.js"
+import {updateContactInfo, updateExperience, updateSkills, updateEducation, updateSummary, updateLanguages, updateCertificates, updateAwards, getResumeInfo,  updateEditExperience, updateEditEducation, downloadResume, updateIntrest, updateProjects, deleteEduItem, deleteExpItem, deleteProjectItem} from "../controllers/resume.js"
 import auth from "../middleware/auth.js"
 
 import express from 'express';
@@ -18,6 +18,8 @@ router.get("/getResumeInfo", auth, getResumeInfo)
 router.post("/updateEditExperience", auth, updateEditExperience)
 router.post("/updateEditEducation", auth, updateEditEducation)
 router.get("/downloadResume", auth, downloadResume)
-
+router.delete("/deleteEducationItem", auth, deleteEduItem)
+router.delete("/deleteExperienceItem", auth, deleteExpItem)
+router.delete("/deleteProjectItem", auth, deleteProjectItem)
 
 export default router;
