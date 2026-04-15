@@ -304,7 +304,8 @@ window.addEventListener("DOMContentLoaded", async (e) => {
     if(user.data.resumeInfo[0].skills){
         updateSkillInfoResume(user.data.resumeInfo[0].skills)
     }
-    if(user.data.resumeInfo[0].education){
+    if(user.data.resumeInfo[0].education.length > 0){
+        console.log(user.data.resumeInfo[0].education)
         updateEducationInfoResume( user.data.resumeInfo[0].education)
 
     }
@@ -346,12 +347,13 @@ function updateExperienceInfoResume(response){
 }
 
 function updateEducationInfoResume(response){
-        
-    // In a real app, you would update the specific education item being edited
-    response.forEach(res=>{
-        const education = createEducationItem(res.degree, res.institution, res.year, res._id);
-        document.querySelector('#educationSection .section-content').appendChild(education);
-    })
+    if(response.length != 0){
+        // In a real app, you would update the specific education item being edited
+        response.forEach(res=>{
+            const education = createEducationItem(res.degree, res.institution, res.year, res._id);
+            document.querySelector('#educationSection .section-content').appendChild(education);
+        })
+    }
 }
 function updateContactInfoResume(response){
     document.getElementById('contactName').textContent = response.data.userInfo[0].username;
@@ -1142,10 +1144,37 @@ function openModalWithData(experienceItem, e) {
 
 
 // Function to delete an experience item
-function deleteExperienceItem(item) {
+async function deleteExperienceItem(item) {
     console.log(item)
-    if (confirm('Are you sure you want to delete this experience?')) {
-        item.remove();
+     const token = localStorage.getItem("token")
+    if(!token) {
+        showToast("Not Authenticated, Login Again")
+        window.location.href ="./Login"
+        return
+    }
+    let payload = {
+        id: item.id,
+        fallbackId: item.dataset.id
+    }
+
+    try { 
+        const response = await axios.delete(`${API_URL}/resume/deleteExperienceItem`, {
+            headers: {
+                "Authorization": token
+            },
+            data: payload
+        })
+        console.log(response)
+
+        if(response.status===200){
+            item.remove();
+            showToast("Experience deleted successfully!")
+        }
+    }
+    catch(error){
+        console.error("Delete failed:", error);
+        const errorMsg = error.response?.data || "Failed to delete item";
+        showToast(errorMsg);
     }
 }
 
@@ -1211,9 +1240,36 @@ function moveProjectItem(item, direction) {
 
 
 
-function deleteProjectItem(item) {
-    if (confirm('Are you sure you want to delete this experience?')) {
-        item.remove();
+async function deleteProjectItem(item) {
+    const token = localStorage.getItem("token")
+    if(!token) {
+        showToast("Not Authenticated, Login Again")
+        window.location.href ="./Login"
+        return
+    }
+    let payload = {
+        id: item.id,
+        fallbackId: item.dataset.id
+    }
+
+    try { 
+        const response = await axios.delete(`${API_URL}/resume/deleteProjectItem`, {
+            headers: {
+                "Authorization": token
+            },
+            data: payload
+        })
+        console.log(response)
+
+        if(response.status===200){
+            item.remove();
+            showToast("Project deleted successfully!")
+        }
+    }
+    catch(error){
+        console.error("Delete failed:", error);
+        const errorMsg = error.response?.data || "Failed to delete item";
+        showToast(errorMsg);
     }
 }
 
@@ -1337,9 +1393,37 @@ function moveEducationItem(item, direction) {
         editExperiencemodal.classList.toggle('active');
     }
 
-function deleteEducationItem(item) {
-    if (confirm('Are you sure you want to delete this experience?')) {
-        item.remove();
+async function deleteEducationItem(item) {
+    console.log(item, item.id, item.dataset.id)
+    const token = localStorage.getItem("token")
+    if(!token) {
+        showToast("Not Authenticated, Login Again")
+        window.location.href ="./Login"
+        return
+    }
+    let payload = {
+        id: item.id,
+        fallbackId: item.dataset.id
+    }
+
+    try { 
+        const response = await axios.delete(`${API_URL}/resume/deleteEducationItem`, {
+            headers: {
+                "Authorization": token
+            },
+            data: payload
+        })
+        console.log(response)
+
+        if(response.status===200){
+            item.remove();
+            showToast("Education deleted successfully!")
+        }
+    }
+    catch(error){
+        console.error("Delete failed:", error);
+        const errorMsg = error.response?.data || "Failed to delete item";
+        showToast(errorMsg);
     }
 }
 
