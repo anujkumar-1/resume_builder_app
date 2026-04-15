@@ -1067,15 +1067,16 @@ function createProjectItem(projectTitle, projectDescription, projectDuration, pr
 
     editBtn.addEventListener('click', function(e) {
         const projectItem = this.closest('.project-item');
+        console.log(projectItem)
         openProjectModalWithData(projectItem, e);
     });
     
     return projectItem;
 }
 
-function openProjectModalWithData(){
-
-}
+function openProjectModalWithData(projectItem, e){
+    console.log(projectItem, e)
+}   
 
 
 function openEducationModalWithData(educationItem, e){
@@ -1104,7 +1105,7 @@ function openModalWithData(experienceItem, e) {
         const title = experienceItem.querySelector('.experience-title').textContent;
         const company = experienceItem.querySelector('.experience-company').textContent;
         const duration = experienceItem.querySelector('.experience-duration').textContent;
-        const description = experienceItem.querySelector('.experience-description p').textContent;
+        const description = experienceItem.querySelector('.experience-description p')?.textContent;
 
         
 	    document.getElementById('editJobTitle').value = title;
@@ -1503,18 +1504,22 @@ async function updateProjects(){
         id: id, 
         uid: uid
     }
+    console.log(obj)
     const response = await axios.post(`${API_URL}/resume/updateEditExperience`, obj, {headers: {Authorization:token}})
 
     if(uid!="undefined"){
         const expItem = document.getElementById(uid)
+        console.log(expItem)
         const experience = response.data.result.experience.find(exp => exp._id === uid);
+        console.log(experience)
         expItem.querySelector('.experience-title').textContent = experience.role;
         // Update company
         expItem.querySelector('.experience-company').textContent = experience.company;
         // Update duration
         expItem.querySelector('.experience-duration').textContent = `${experience.startDate.trim()} - ${experience.endDate.trim()} `;
         // Update description
-        expItem.querySelector('.experience-description p').textContent = experience.description;
+        console.log(experience.description[0])
+        expItem.querySelector('.experience-description li').textContent = experience.description[0];
     }
     else{
         const editExperienceItem = document.querySelector(`.experience-item[data-id="${id}"]`);
@@ -1527,7 +1532,7 @@ async function updateProjects(){
             // Update duration
             editExperienceItem.querySelector('.experience-duration').textContent = editjobDuration;
             // Update description
-            editExperienceItem.querySelector('.experience-description p').textContent = editDescription;
+            editExperienceItem.querySelector('.experience-description li').textContent = editDescription;
         }
     }
    
@@ -1540,6 +1545,7 @@ async function updateEditEducation(e){
     const editDuration = document.getElementById('editDuration').value
     const id = localStorage.getItem("eduId")
     const euid = localStorage.getItem("edu-id")
+    console.log(editDegree, editInstitution, editDuration, id, euid)
     
 
     const token = localStorage.getItem("token");
@@ -1557,6 +1563,7 @@ async function updateEditEducation(e){
     
     if(euid!="undefined"){
         const eduItem = document.getElementById(euid)
+        console.log(eduItem)
         const education = response.data.result.education.find(edu => edu._id === euid);
         eduItem.querySelector('.education-degree').textContent = editDegree;
         // Update company
