@@ -1,6 +1,16 @@
 console.log(window.API_CONFIG)
 let API_URL = window.API_CONFIG?.development || "http://localhost:3000"
 
+window.addEventListener("DOMContentLoaded", async (event) => {
+    const token = localStorage.getItem("token")
+    if(token){
+        const response = await axios.get(`${API_URL}/users/authenticate`, {headers: {Authorization: token}})
+        if(response.status == 200){
+            window.location.href="./Resume"
+        }
+    }
+})
+
 const googleBtn = document.getElementById("google-btn")
 document.getElementById('togglePassword').addEventListener('click', function() {
     const passwordInput = document.getElementById('password');
