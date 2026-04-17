@@ -844,6 +844,17 @@ function toggleManageSections() {
         manageSectionsSidebar.style.display = 'none';
         manageSectionsBtn.classList.remove('active');
     }
+    scrollToBottom()
+}
+
+function scrollToBottom() {
+  // Checks if the screen width is mobile (less than 768px)
+  if (window.innerWidth <= 978) {
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
 }
 
 function toggleModal(modal) {
