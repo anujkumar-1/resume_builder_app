@@ -248,6 +248,11 @@ const downloadBtn = document.getElementById('downloadBtn');
 const applySectionsBtn = document.getElementById('applySectionsBtn');
 const resumePreview = document.getElementById('resumePreview');
 
+// navbar element   
+const hamburger = document.getElementById('hamburgerBtn');
+const mobileOverlay = document.getElementById('mobileOverlay');
+const closeBtn = document.getElementById('closeDrawerBtn');
+
 // Modal elements
 const contactModal = document.getElementById('contactModal');
 const experienceModal = document.getElementById('experienceModal');
@@ -519,49 +524,65 @@ function updateProjectInfoResume(response){
     })
     }
 }
+// navbar menu dropdown mobile
 
-mobileMenuBtn.addEventListener('click', () => {
-    mobileNav.classList.add('active');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
+// open drawer
+hamburger.addEventListener('click', () => {
+mobileOverlay.classList.add('active');
+document.body.style.overflow = 'hidden';
 });
 
-closeMobileMenu.addEventListener('click', () => {
-    mobileNav.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = 'auto';
+// close drawer by X
+closeBtn.addEventListener('click', () => {
+mobileOverlay.classList.remove('active');
+document.body.style.overflow = '';
 });
 
-overlay.addEventListener('click', () => {
-    mobileNav.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = 'auto';
+// close when clicking on background overlay
+mobileOverlay.addEventListener('click', (e) => {
+if (e.target === mobileOverlay) {
+    mobileOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
 });
 
-// Mobile Dropdown Toggle
-dropdownToggles.forEach(toggle => {
-    toggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        const dropdown = toggle.nextElementSibling;
-        const icon = toggle.querySelector('i');
-        
-        toggle.classList.toggle('active');
-        dropdown.classList.toggle('active');
-        icon.classList.toggle('fa-chevron-up');
-        icon.classList.toggle('fa-chevron-down');
-    });
+// close on escape key
+document.addEventListener('keydown', (e) => {
+if (e.key === 'Escape' && mobileOverlay.classList.contains('active')) {
+    mobileOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
 });
 
-// Close dropdown when clicking outside
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.nav-item')) {
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            menu.style.opacity = '0';
-            menu.style.visibility = 'hidden';
-            menu.style.transform = 'translateY(10px)';
-        });
+// Accordion functionality for mobile (dropdowns inside drawer)
+const accordionItems = document.querySelectorAll('.accordion-item');
+
+accordionItems.forEach(item => {
+const titleBtn = item.querySelector('.accordion-title');
+titleBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    // close other accordions? we keep independent (but you can modify)
+    // toggle active class on clicked item
+    item.classList.toggle('active');
+});
+});
+
+// optional: close drawer if window resized above mobile breakpoint
+let resizeTimer;
+window.addEventListener('resize', () => {
+clearTimeout(resizeTimer);
+resizeTimer = setTimeout(() => {
+    if (window.innerWidth > 900 && mobileOverlay.classList.contains('active')) {
+    mobileOverlay.classList.remove('active');
+    document.body.style.overflow = '';
     }
+}, 150);
 });
+
+// initially set first accordion open? (optional, but we leave none open)
+// we want clean start. User clicks to open.
+
+
 
 
 // Focus editor on load

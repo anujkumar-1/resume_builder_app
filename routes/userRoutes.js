@@ -1,4 +1,4 @@
-import {signUp, login, authenticate} from "../controllers/user.js";
+import {signUp, login, authenticate, createOrder, paymentSuccess, paymentFailed} from "../controllers/user.js";
 import {forgetPassword, resetPassword, updatePassword} from "../controllers/forgetPassord.js"
 import {authLimiter, thirdPartyStrictLimiter} from "../middleware/rateLimitter.js"
 import {googleSignup, googleLogin} from "../controllers/googleAuth.js"
@@ -15,5 +15,9 @@ router.get("/resetpassword/:id",  resetPassword)
 router.post("/updatepassword/:resetpasswordid", updatePassword)
 router.post("/signup", authLimiter, signUp)
 router.get("/authenticate", auth, authenticate)
+router.post("/create-order", auth, createOrder)
+router.post("/payment-success",  paymentSuccess)
+router.post("/payment-failed", paymentFailed)
+
 
 export default router;
