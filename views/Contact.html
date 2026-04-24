@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>MyJobCV · Contact Support</title>
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+   <link rel="stylesheet" href="./styles/contact.css">
+</head>
+<body>
+<div class="contact-wrapper">
+   <div class="contact-header">
+      <div class="logo-badge">
+         <div class="logo-icon"><i class="fas fa-briefcase"></i></div>
+         <span class="logo-text">MyJobCV</span>
+      </div>
+      <h1>Get in touch</h1>
+      <div class="subhead">Have questions or feedback? Reach out — we'll get back to you promptly.</div>
+      <div class="badge-group">
+         <span class="badge"><i class="fas fa-clock"></i> Fast responses</span>
+         <span class="badge"><i class="fas fa-envelope"></i> Support & inquiries</span>
+      </div>
+   </div>
+
+   <div class="contact-grid">
+      <!-- LEFT COLUMN: Direct contact (only, per request: Direct contact last in the layout order) -->
+      <div class="info-section">
+         <div class="info-card">
+            <div class="info-title"><i class="fas fa-envelope"></i> <span>Direct contact</span></div>
+            <div class="detail-line"><i class="fas fa-paper-plane"></i> <strong>Support email:</strong> <a href="mailto:support@myjobcv.com">admin@myjobcv.com</a></div>
+            <div class="detail-line"><i class="fas fa-user"></i> <strong>Response team:</strong> Anuj Kumar</div>
+            <div class="detail-line"><i class="fas fa-clock"></i> <strong>Business hours:</strong> Mon–Fri, 10am – 6pm IST</div>
+            <hr>
+            <div class="detail-line"><i class="fas fa-check-circle"></i> <strong>For data requests:</strong> Account deletion or data access inquiries — email us directly.</div>
+         </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Send a message first (form appears prominently) -->
+      <div class="form-section">
+         <div class="form-title"><i class="fas fa-pen-alt"></i> Send a message</div>
+         <div class="form-sub">Fill out the details below — we'll reply as soon as possible.</div>
+
+         <!-- Alert container -->
+         <div id="formAlert" class="alert hidden"></div>
+
+         <form id="contactForm">
+            <div class="form-group">
+               <label>Full name <span class="required">*</span></label>
+               <input type="text" id="fullName" name="fullName" placeholder="e.g. Rohan Mehta" required>
+            </div>
+
+            <div class="form-group">
+               <label>Email address <span class="required">*</span></label>
+               <input type="email" id="email" name="email" placeholder="you@example.com" required>
+            </div>
+
+            <div class="form-group">
+               <label>Subject <span class="required">*</span></label>
+               <select id="subject" name="subject" required>
+                  <option value="" disabled selected>— Select a category —</option>
+                  <option value="Account & Login">🔐 Account & Login (Google Sign-in)</option>
+                  <option value="Resume Builder Issue">📄 Resume Builder Issue</option>
+                  <option value="Privacy / Data Deletion">🛡️ Privacy / Data Deletion Request</option>
+                  <option value="Contribution (Coffee)">☕ Contribution / Razorpay</option>
+                  <option value="Feature Request">💡 Feature Request</option>
+                  <option value="Other">📬 Other</option>
+               </select>
+            </div>
+
+            <div class="form-group">
+               <label>Message <span class="required">*</span></label>
+               <textarea id="message" name="message" placeholder="Describe your question or concern in detail. For data deletion requests, include your registered email." required></textarea>
+            </div>
+
+            <div class="checkbox-group">
+               <input type="checkbox" id="consent" required>
+               <label for="consent">I consent to MyJobCV processing my personal data (name, email, message) solely to respond to my inquiry. I have read the <a href="./Privacy_Policy">Privacy Policy</a> and <a href="./Terms_Condition">Google Limited Use Disclosure</a>.</label>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+               <i class="fas fa-paper-plane"></i> Send message
+            </button>
+         </form>
+
+         <div style="font-size: 0.7rem; color: #8a99b0; text-align: center; margin-top: 20px;">
+            <i class="fas fa-lock"></i> Your message is encrypted. We never share your data.
+         </div>
+      </div>
+   </div>
+
+   <div class="footer-note">
+      <i class="fas fa-briefcase"></i> MyJobCV – Professional resume builder
+      <br><a href="./Resume">Return to Home</a> · <a href="./Privacy_Policy">Privacy Policy</a> · <a href="./Terms_Condition">Terms</a>
+   </div>
+</div>
+
+<script>
+   (function() {
+      const form = document.getElementById('contactForm');
+      const alertBox = document.getElementById('formAlert');
+      const submitBtn = document.getElementById('submitBtn');
+
+      function showAlert(type, message) {
+         alertBox.className = `alert alert-${type}`;
+         alertBox.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle')}"></i> ${message}`;
+         alertBox.classList.remove('hidden');
+         if (type !== 'error') {
+            setTimeout(() => {
+               alertBox.classList.add('hidden');
+            }, 6000);
+         }
+      }
+
+      function hideAlert() {
+         alertBox.classList.add('hidden');
+      }
+
+      function isValidEmail(email) {
+         return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email);
+      }
+
+      form.addEventListener('submit', async (e) => {
+         e.preventDefault();
+         hideAlert();
+
+         const fullName = document.getElementById('fullName').value.trim();
+         const email = document.getElementById('email').value.trim();
+         const subjectSelect = document.getElementById('subject');
+         const subject = subjectSelect.value;
+         const messageText = document.getElementById('message').value.trim();
+         const consent = document.getElementById('consent').checked;
+
+         if (!fullName || !email || !subject || !messageText) {
+            showAlert('error', 'Please fill in all required fields (*).');
+            return;
+         }
+
+         if (!isValidEmail(email)) {
+            showAlert('error', 'Please enter a valid email address.');
+            return;
+         }
+
+         if (!consent) {
+            showAlert('error', 'You must consent to the data processing terms before sending.');
+            return;
+         }
+
+         submitBtn.disabled = true;
+         submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
+
+         try {
+            const emailBody = `Name: ${fullName}%0AEmail: ${email}%0ASubject: ${subject}%0A%0A--- Message ---%0A${encodeURIComponent(messageText)}%0A%0A--- Consent given: Yes ---`;
+            const mailtoLink = `mailto:admin@myjobcv.com?subject=Contact%20Form%3A%20${encodeURIComponent(subject)}&body=${emailBody}`;
+
+            // Store in localStorage for demo
+            const recentMessages = JSON.parse(localStorage.getItem('myjobcv_contact_demo') || '[]');
+            recentMessages.unshift({
+               id: Date.now(),
+               name: fullName,
+               email: email,
+               subject: subject,
+               message: messageText,
+               timestamp: new Date().toISOString()
+            });
+            while(recentMessages.length > 5) recentMessages.pop();
+            localStorage.setItem('myjobcv_contact_demo', JSON.stringify(recentMessages));
+
+            showAlert('success', `✅ Message sent successfully! Our team will respond within 24 hours at ${email}.`);
+            
+            setTimeout(() => {
+               window.location.href = mailtoLink;
+            }, 800);
+
+            form.reset();
+            document.getElementById('consent').checked = false;
+            
+         } catch (err) {
+            showAlert('error', 'Something went wrong. Please email support@myjobcv.com directly.');
+         } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send message';
+         }
+      });
+   })();
+</script>
+</body>
+</html>
