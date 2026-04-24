@@ -1,0 +1,259 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fafcff;
+    color: #1a2c3e;
+    line-height: 1.55;
+}
+
+/* professional container */
+.policy-container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 56px 32px 80px;
+}
+
+/* header */
+.policy-header {
+    margin-bottom: 40px;
+    border-bottom: 1px solid #e4e9f0;
+    padding-bottom: 28px;
+}
+
+.logo-badge {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.logo-icon {
+    background: #1f3e6b;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.4rem;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f2b3f;
+    letter-spacing: -0.3px;
+}
+
+h1 {
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #0a1a2a;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+}
+
+.last-updated {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    color: #5b6e8c;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.badge-group {
+    display: flex;
+    gap: 12px;
+    margin: 20px 0 8px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    background: #eef2fa;
+    padding: 5px 14px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #1f3e6b;
+}
+
+.badge-google {
+    background: #e8f0fe;
+    color: #1a73e8;
+    border-left: 3px solid #1a73e8;
+}
+
+/* main card */
+.privacy-card {
+    background: #ffffff;
+    border-radius: 28px;
+    border: 1px solid #eef2f8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    overflow: hidden;
+    margin-bottom: 32px;
+}
+
+.section {
+    padding: 28px 36px;
+    border-bottom: 1px solid #eff3f9;
+}
+
+.section:last-child {
+    border-bottom: none;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f2b3f;
+    margin-bottom: 20px;
+}
+
+.section-title i {
+    color: #1f3e6b;
+    font-size: 1.3rem;
+    width: 32px;
+}
+
+.subheading {
+    font-weight: 700;
+    color: #1f3e6b;
+    margin: 20px 0 12px 0;
+    font-size: 0.98rem;
+}
+
+.bullet-list {
+    list-style: none;
+    padding-left: 28px;
+}
+
+.bullet-list li {
+    margin-bottom: 14px;
+    font-size: 0.94rem;
+    color: #2c3f57;
+    position: relative;
+    padding-left: 20px;
+    line-height: 1.5;
+}
+
+.bullet-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #1f3e6b;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* special highlight for Google Limited Use */
+.limited-use-box {
+    background: #f7f9fe;
+    border-left: 4px solid #1a73e8;
+    padding: 20px 24px;
+    border-radius: 18px;
+    margin: 20px 0 10px;
+}
+
+.limited-use-box p {
+    margin-bottom: 10px;
+    font-size: 0.94rem;
+    color: #1f2e4a;
+}
+
+.google-link {
+    color: #1a73e8;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid #cbdff2;
+}
+
+.google-link:hover {
+    border-bottom-color: #1a73e8;
+}
+
+hr {
+    margin: 24px 0;
+    border: none;
+    border-top: 1px solid #eef2f8;
+}
+
+.grievance-card {
+    background: #fafcfd;
+    border-radius: 20px;
+    padding: 4px 0;
+}
+
+.contact-line {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 8px 0;
+}
+
+.contact-label {
+    font-weight: 700;
+    min-width: 130px;
+    color: #1f3e6b;
+}
+
+a {
+    color: #1f3e6b;
+    text-decoration: none;
+    border-bottom: 1px solid #cfdfef;
+}
+
+a:hover {
+    color: #0a2a44;
+    border-bottom-color: #1f3e6b;
+}
+
+.footer-note {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #6c7e9e;
+    margin-top: 32px;
+    border-top: 1px solid #eef2f8;
+    padding-top: 28px;
+}
+
+@media (max-width: 700px) {
+    .policy-container {
+    padding: 32px 20px 56px;
+    }
+    .section {
+    padding: 22px 20px;
+    }
+    .bullet-list {
+    padding-left: 16px;
+    }
+    h1 {
+    font-size: 1.6rem;
+    }
+    .section-title {
+    font-size: 1.2rem;
+    }
+}
+
+@media print {
+    body {
+    background: white;
+    }
+    .policy-container {
+    padding: 20px;
+    }
+    .badge-group {
+    print-color-adjust: exact;
+    }
+}
