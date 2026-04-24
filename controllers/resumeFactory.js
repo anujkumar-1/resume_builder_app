@@ -412,6 +412,7 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
     drawContact(data, x, startY) {
         let y = startY;
         
+        // Section title
         this.doc
             .fillColor(this.colors.primary)
             .fontSize(14)
@@ -421,22 +422,31 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
         y += 20;
         
         const items = [
-            { value: data.phone },
-            { value: data.email },
-            { value: data.address },
-            { value: data.website }
+            { icon: 'phone-solid-full.png', value: data.phone },
+            { icon: 'envelope-solid-full.png', value: data.email },
+            { icon: 'location-dot-solid-full.png', value: data.address },
+            { icon: 'globe-solid-full.png', value: data.website }
         ];
         
         items.forEach(item => {
+            // Check page break
             if (y + 20 > this.pageHeight - this.margins.bottom) {
                 this.addNewPage();
                 y = this.margins.top;
             }
             
+            // Icon
+            if(item.value != null){
+
+            
+            const iconPath = path.join(process.cwd(), 'public', 'Assets', item.icon);
+            this.doc.image(iconPath, x, y, { width: 10 });
+            // Value (with proper wrapping)
             const valueHeight = this.calculateTextHeight(item.value, {
                 width: this.leftColWidth - 1,
                 fontSize: 10,
                 lineGap: 2
+
             });
             
             this.doc
@@ -448,6 +458,8 @@ class TwoColumnModernTemplate extends BaseResumeTemplate {
                 });
             
             y += Math.max(18, valueHeight + 2);
+
+            }
         });
         
         return y + 5;

@@ -1,8 +1,10 @@
 import User from "../models/user.js"
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
+import Razorpay from "razorpay";
 import axios from 'axios';
 import dotenv from "dotenv"
+import Contributions from "../models/contribution.js"
 dotenv.config({})
 const SECRET_KEY = process.env.GOOGLE_RECAPTCHA_SECRET_ID
 async function verifyToken(userToken) {
@@ -129,6 +131,107 @@ export const authenticate = async (req, res)=>{
         }
     } catch (error) {
         return res.status(500).json({ success: false, message: "Server error during authentication" });
+    }
+}
+
+export const createOrder = async (req, res)=>{
+        console.log("I am here createOrder start")
+
+    try {
+        let {amount , currency, message} = req.body
+        if(!amount || !currency){
+            return res.status(400).json({success: false, message: "Bad Request, Missing amount or currency"})
+        }
+        amount = amount * 100
+         var rzp = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
+
+
+        rzp.orders.create({ amount, currency: currency }, async (err, order) => {
+            try {
+                if (err) {
+                    throw new Error(JSON.stringify(err));
+                }
+                        console.log("I am here createOrder end")
+
+                const data = await Contributions.create({order_id: order.id, payment_status: "pending", user: req.user.userId, message: message});
+                res.status(201).json({ order, key_id: rzp.key_id});
+            } catch (error) {
+                throw new Error(error);
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error during authentication" });
+
+    }
+}
+
+
+export const paymentSuccess = async (req, res)=>{
+    try {
+        const {order_id, payment_id} = req.body
+        console.log("I am here paymentSuccess")
+        console.log(order_id, payment_id)
+
+        if(!order_id){
+            return res.status(400).json({success: false, message: "Bad Request, Missing parameter"})
+
+        }
+        const user = await Contributions.findOneAndUpdate(
+            {order_id: order_id},
+            {
+                $set: {
+                    "payment_id": payment_id,
+                    "payment_status": "success"
+                }
+            },
+            {
+                returnDocument: 'after'
+            }
+        )
+
+        if(user.matchedCount===0){
+            return res.status(404).json({success: false, message: "Order not found"})
+        }
+        return res.status(201).json({success: true, message: "payment successful"})
+
+    } catch (error) {
+        return res.status(500).json({success: false, message: "Internal server error"})
+    }
+}
+
+
+export const paymentFailed= async(req, res)=>{
+    try {
+        const {order_id, payment_id} = req.body
+        console.log("I am here paymentFailed")
+        console.log(order_id, payment_id)
+
+        if(!order_id){
+            return res.status(400).json({success: false, message: "Order missing"})
+        }
+
+        const user = await Contributions.findOneAndUpdate(
+            {
+                order_id: order_id
+            },
+            {
+                $set:{
+                    "payment_id": payment_id,
+                    "payment_status": "falied"
+                }
+            }
+        )
+
+        if(user.matchedCount===0){
+            return res.status(404).json({success: false, message: "Order not found"})
+        }
+
+    } catch (error) {
+        return res.status(500).json({success: false, message: "Internal server error"})
+
     }
 }
 
