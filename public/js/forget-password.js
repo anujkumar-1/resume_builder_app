@@ -1,4 +1,4 @@
-let API_URL = window.API_CONFIG?.development || "http://localhost:3000"
+let API_URL = window.API_CONFIG?.production || "https://myjobcv.online"
 const forgetPasswordForm = document.getElementById("forget-password-form")
 
 document.addEventListener("DOMContentLoaded", () => {

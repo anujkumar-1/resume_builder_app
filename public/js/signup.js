@@ -1,5 +1,5 @@
 console.log(window.API_CONFIG)
-let API_URL = window.API_CONFIG?.development || "http://localhost:3000"
+let API_URL = window.API_CONFIG?.production || "https://myjobcv.online"
 
 window.addEventListener("DOMContentLoaded", async (event) => {
     const token = localStorage.getItem("token")
