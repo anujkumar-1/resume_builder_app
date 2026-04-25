@@ -61,10 +61,9 @@ app.get('/{:page}', (req, res, next) => {
     }
 });
 
-
-
+const uri= process.env.MONGO_URI
 // MongoDB connection
-mongoose.connect("mongodb://localhost:27017/resume", {
+mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
