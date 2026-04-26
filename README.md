@@ -3,8 +3,10 @@
 
 
  <p align="center">
-  <img src="https://github.com/user-attachments/assets/dd50f2a3-7d9e-4d68-9067-0e0e86997c0e" width="1000" />
-</p>
+
+ <img width="1000" alt="Blue Modern Company Slogan LinkedIn Banner" src="https://github.com/user-attachments/assets/86a3dd98-c65b-4a95-9892-e5b1b8fb896d" />
+
+ </p>
 
 
 
