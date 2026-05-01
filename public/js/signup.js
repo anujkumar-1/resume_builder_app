@@ -1,5 +1,5 @@
 console.log(window.API_CONFIG)
-let API_URL = window.API_CONFIG?.production || "https://myjobcv.online"
+let API_URL = window.API_CONFIG?.development || "http://localhost:3000"
 
 window.addEventListener("DOMContentLoaded", async (event) => {
     const token = localStorage.getItem("token")
@@ -53,7 +53,7 @@ function showToast(message) {
     setTimeout(() => {
         toast.classList.remove('show');
         toast.classList.add('hide');
-        
+                                                                                    
         setTimeout(() => {
             container.removeChild(toast);
         }, 500);
