@@ -1,4 +1,4 @@
-let API_URL = window.API_CONFIG?.production || "https://myjobcv.online"
+let API_URL = window.API_CONFIG?.development || "http://localhost:3000"
 const singleColumnLayout = ["summary", "experience", "skills", "education", "certification", "awards", "languages"]
 // Section HTML templates
 const sectionTemplates = {
@@ -251,8 +251,13 @@ const resumePreview = document.getElementById('resumePreview');
 // navbar element   
 const hamburger = document.getElementById('hamburgerBtn');
 const mobileOverlay = document.getElementById('mobileOverlay');
-const closeBtn = document.getElementById('closeDrawerBtn');
+const closeDrawerBtn = document.getElementById('closeDrawerBtn');
 
+const resumeItem = document.querySelector('.mobile-nav-item[data-accordion="resume"]');
+const resumeTrigger = document.getElementById('resumeTrigger');
+const allMobileLinks = document.querySelectorAll('.mobile-nav-link, .submenu-list a, .mobile-extra-links a, .mobile-post-btn, .mobile-signin');
+
+      
 // Modal elements
 const contactModal = document.getElementById('contactModal');
 const experienceModal = document.getElementById('experienceModal');
@@ -287,6 +292,8 @@ const allTemplatesTheme = document.getElementById("all-templates-themes")
 
 
 const moveUpButton = document.querySelectorAll(".move-up-btn");
+
+let allExperienceArr =[]
 console.log(moveUpButton)
 moveUpButton.forEach(btn=>{
     btn.addEventListener("click", (e)=>{
@@ -526,64 +533,102 @@ function updateProjectInfoResume(response){
 }
 // navbar menu dropdown mobile
 
-// open drawer
-hamburger.addEventListener('click', () => {
-mobileOverlay.classList.add('active');
-document.body.style.overflow = 'hidden';
-});
-
-// close drawer by X
-closeBtn.addEventListener('click', () => {
-mobileOverlay.classList.remove('active');
-document.body.style.overflow = '';
-});
-
-// close when clicking on background overlay
-mobileOverlay.addEventListener('click', (e) => {
-if (e.target === mobileOverlay) {
+function openDrawer() {
+    mobileOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+      
+function closeDrawer() {
     mobileOverlay.classList.remove('active');
     document.body.style.overflow = '';
 }
-});
 
-// close on escape key
+// Event listeners for open/close
+if (hamburger) {
+    hamburger.addEventListener('click', openDrawer);
+}
+if (closeDrawerBtn) {
+    closeDrawerBtn.addEventListener('click', closeDrawer);
+}
+
+// Close when clicking on overlay background
+if (mobileOverlay) {
+    mobileOverlay.addEventListener('click', (e) => {
+        if (e.target === mobileOverlay) {
+        closeDrawer();
+        }
+    });
+}
+
+// Close with ESC key
 document.addEventListener('keydown', (e) => {
-if (e.key === 'Escape' && mobileOverlay.classList.contains('active')) {
-    mobileOverlay.classList.remove('active');
-    document.body.style.overflow = '';
-}
+    if (e.key === 'Escape' && mobileOverlay.classList.contains('active')) {
+        closeDrawer();
+    }
 });
 
-// Accordion functionality for mobile (dropdowns inside drawer)
-const accordionItems = document.querySelectorAll('.accordion-item');
 
-accordionItems.forEach(item => {
-const titleBtn = item.querySelector('.accordion-title');
-titleBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    // close other accordions? we keep independent (but you can modify)
-    // toggle active class on clicked item
-    item.classList.toggle('active');
-});
-});
-
-// optional: close drawer if window resized above mobile breakpoint
 let resizeTimer;
 window.addEventListener('resize', () => {
-clearTimeout(resizeTimer);
-resizeTimer = setTimeout(() => {
-    if (window.innerWidth > 900 && mobileOverlay.classList.contains('active')) {
-    mobileOverlay.classList.remove('active');
-    document.body.style.overflow = '';
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        if (window.innerWidth > 900 && mobileOverlay.classList.contains('active')) {
+        closeDrawer();
+        }
+    }, 150);
+});
+      
+
+if (resumeItem && resumeTrigger) {
+    const subContainer = resumeItem.querySelector('.submenu-container');
+    const chevron = resumeTrigger.querySelector('.chevron-icon');
+    
+    resumeItem.classList.remove('open');
+    if (subContainer) subContainer.style.maxHeight = null;
+    
+    function toggleResumeAccordion(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const isOpen = resumeItem.classList.contains('open');
+        
+        if (isOpen) {
+            resumeItem.classList.remove('open');
+            if (subContainer) subContainer.style.maxHeight = null;
+            if (chevron) chevron.style.transform = 'rotate(0deg)';
+        } else {
+            resumeItem.classList.add('open');
+            if (subContainer) {
+            subContainer.style.maxHeight = subContainer.scrollHeight + 'px';
+            }
+            if (chevron) chevron.style.transform = 'rotate(90deg)';
+        }
     }
-}, 150);
+    resumeTrigger.addEventListener('click', toggleResumeAccordion);
+}
+    
+     
+
+window.addEventListener('load', function() {
+    const activeAccordion = document.querySelector('.mobile-nav-item.open');
+    if (activeAccordion) {
+        const container = activeAccordion.querySelector('.submenu-container');
+        if (container && container.style.maxHeight !== container.scrollHeight + 'px') {
+        container.style.maxHeight = container.scrollHeight + 'px';
+        }
+    }
 });
 
-// initially set first accordion open? (optional, but we leave none open)
-// we want clean start. User clicks to open.
 
-
-
+allMobileLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        if (mobileOverlay.classList.contains('active')) {
+        setTimeout(() => {
+            closeDrawer();
+        }, 80);
+        }
+    });
+});
+      
 
 // Focus editor on load
 editor.focus();
@@ -689,10 +734,12 @@ editor.addEventListener('paste', function(e) {
     e.preventDefault();
     const text = (e.clipboardData || window.clipboardData).getData('text/plain');
     document.execCommand('insertText', false, text);
+    
 });
 
 // Add this with your other event listeners
 editor.addEventListener('input', function() {
+
 });
 
 
@@ -955,7 +1002,7 @@ function generateId(category) {
 
 // Function to create a new experience item
 function createExperienceItem(jobTitle, company, duration, description, uid) {
-    console.log(1)
+    console.log(description)
     const experienceItem = document.createElement('div');
     const experienceDescription = document.createElement("ul")
     experienceItem.className = 'experience-item';
@@ -1131,7 +1178,7 @@ function openEducationModalWithData(educationItem, e){
 }
 
 function openModalWithData(experienceItem, e) {
-
+        console.log(experienceItem)
         const id = experienceItem.getAttribute("data-id")
         const uid = experienceItem.getAttribute("id")
         localStorage.setItem("expId", id)
@@ -1139,8 +1186,8 @@ function openModalWithData(experienceItem, e) {
         const title = experienceItem.querySelector('.experience-title').textContent;
         const company = experienceItem.querySelector('.experience-company').textContent;
         const duration = experienceItem.querySelector('.experience-duration').textContent;
-        const description = experienceItem.querySelector('.experience-description p')?.textContent;
-
+        const description = experienceItem.querySelector('.experience-description').innerText;
+        console.log(description)
         
 	    document.getElementById('editJobTitle').value = title;
         document.getElementById('editCompany').value = company;
@@ -1215,7 +1262,7 @@ function moveExperienceItem(item, direction) {
     // Get the experience section container
     console.log("exp", direction)
     const experienceSection = document.querySelector('#experienceSection .section-content');
-    
+    console.log(experienceSection)
     // Validate we're working within the experience section
     if (!experienceSection || !experienceSection.contains(item)) {
         return; // Exit if item isn't in experience section
@@ -1588,6 +1635,7 @@ async function updateProjects(){
         summary: projectEditor,
         projectId: proId
     }
+    console.log(obj)
     document.querySelector('#projectSection .section-content').appendChild(newProject);
 
     const token = localStorage.getItem("token")
