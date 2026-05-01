@@ -13,107 +13,119 @@
 
     <!-- Navbar -->
     <nav class="navbar">
-    <div class="navbar-container">
-      <!-- Left side: logo + dropdown navigation (desktop) -->
-      <div class="navbar-left">
-        <div class="logo">
-          <a href="./Resume">
-            <i class="fas fa-briefcase"></i><span>MyJobCV</span>
-          </a>
-        </div>
-       
-      </div>
-
-      <!-- Right side desktop elements -->
-      <div class="navbar-right">
-        
-         <ul class="nav-dropdowns">
-          <!-- Find jobs dropdown -->
-           <li class="dropdown">
-              <a href="./Resume" class="dropbtn">Home </a>
-           </li>
-          <li class="dropdown">
-            <button class="dropbtn">Resume <i class="fas fa-chevron-down"></i></button>
-            <div class="dropdown-content">
-              <a href="./Resume"><i class="fas fa-magnifying-glass"></i> Resume Samples</a>
-              <a href="./Resume"><i class="fas fa-upload"></i> Resume Templates</a>
-              <a href="./Resume"><i class="fas fa-bookmark"></i> Resume Builder</a>
-              <a href="./Resume"><i class="fas fa-clock"></i> Resume Writing Guide</a>
+        <div class="navbar-container">
+        <!-- Left side logo -->
+        <div class="navbar-left">
+            <div class="logo">
+            <a href="./Resume">
+                <i class="fas fa-briefcase"></i><span>MyJobCV</span>
+            </a>
             </div>
-          </li>
-          <li class="dropdown">
-            <a href="./Contact" class="dropbtn">Contact </a>
-          </li>
-          <!-- Employers dropdown (main one) -->
-          <li class="dropdown">
-            <a href="./About_Me" class="dropbtn">About Me </a>
-          </li>
+        </div>
 
-          <li class="dropdown">
-            <a href="./Buy_Me_A_Coffee" class="dropbtn">Buy me a coffee</a>
-          </li>
-        </ul>
-        <a href="./Login" class="sign-in">Sign in</a>
-        <!-- Hamburger (mobile) -->
-        <button class="hamburger" id="hamburgerBtn" aria-label="menu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-    </div>
-  </nav>
+        <!-- Desktop Right area -->
+        <div class="navbar-right">
+            <ul class="nav-dropdowns">
+            <li class="dropdown"><a href="./No_Experience_Section" class="dropbtn">No Experience Corner</a></li>
+
+            <li class="dropdown">
+                <button class="dropbtn">Resume <i class="fas fa-chevron-down"></i></button>
+                <div class="dropdown-content">
+                <a href="./Resume"><i class="fas fa-magnifying-glass"></i> Resume Samples</a>
+                <a href="./Resume"><i class="fas fa-upload"></i> Resume Templates</a>
+                <a href="./Resume"><i class="fas fa-bookmark"></i> Resume Builder</a>
+                <a href="./Resume"><i class="fas fa-clock"></i> Resume Writing Guide</a>
+                </div>
+            </li>
+            <li class="dropdown"><a href="./Contact" class="dropbtn">Contact</a></li>
+            <li class="dropdown"><a href="./About_Me" class="dropbtn">About Us</a></li>
+            <li class="dropdown"><a href="./Buy_Me_A_Coffee" class="dropbtn">Buy me a coffee</a></li>
+            </ul>
+            <a href="./Login" class="sign-in">Logout</a>
+            <!-- Hamburger (mobile) -->
+            <button class="hamburger" id="hamburgerBtn" aria-label="menu">
+            <span></span><span></span><span></span>
+            </button>
+        </div>
+        </div>
+    </nav>
 
 
     <div id="toast-container"></div>
 
     <!-- Mobile Navigation -->
     <div class="mobile-menu-overlay" id="mobileOverlay">
-    <div class="mobile-drawer">
-      <div class="drawer-header">
-        <span class="drawer-logo"><i class="fas fa-briefcase"></i> indeed</span>
-        <button class="close-drawer" id="closeDrawerBtn">&times;</button>
-      </div>
+        <div class="mobile-drawer">
+        <div class="drawer-header">
+            <span class="drawer-logo"><i class="fas fa-briefcase"></i> MyJobCV</span>
+            <button class="close-drawer" id="closeDrawerBtn">&times;</button>
+        </div>
 
-      <!-- Accordion for mobile – matches desktop dropdowns -->
-      <ul class="mobile-nav-accordion">
-         <li class="dropdown">
-              <a href="./Resume" class="dropbtn">Home </a>
-           </li>
-          <li class="dropdown">
-            <button class="dropbtn">Resume <i class="fas fa-chevron-down"></i></button>
-            <div class="dropdown-content">
-              <a href="./Resume"><i class="fas fa-magnifying-glass"></i> Resume Samples</a>
-              <a href="./Resume"><i class="fas fa-upload"></i> Resume Templates</a>
-              <a href="./Resume"><i class="fas fa-bookmark"></i> Resume Builder</a>
-              <a href="./Resume"><i class="fas fa-clock"></i> Resume Writing Guide</a>
+        <!-- Main navigation list for mobile (accordion + simple links) -->
+        <ul class="mobile-nav-list">
+            <!-- Home (simple link) -->
+            <li class="mobile-nav-item">
+            <a href="./Home" class="mobile-nav-link">
+                <span><i class="fas fa-home"></i> Home</span>
+            </a>
+            </li>
+            
+            <!-- Resume dropdown with accordion (submenu inside drawer) -->
+            <li class="mobile-nav-item" data-accordion="resume">
+            <button class="accordion-trigger" id="resumeTrigger">
+                <span><i class="fas fa-file-alt"></i> Resume</span>
+                <i class="fas fa-chevron-right chevron-icon"></i>
+            </button>
+            <div class="submenu-container">
+                <ul class="submenu-list">
+                <li><a href="./Resume"><i class="fas fa-magnifying-glass"></i> Resume Samples</a></li>
+                <li><a href="./Resume"><i class="fas fa-upload"></i> Resume Templates</a></li>
+                <li><a href="./Resume"><i class="fas fa-bookmark"></i> Resume Builder</a></li>
+                <li><a href="./Resume"><i class="fas fa-clock"></i> Resume Writing Guide</a></li>
+                </ul>
             </div>
-          </li>
-          <li class="dropdown">
-            <a href="./Contact" class="dropbtn">Contact </a>
-          </li>
+            </li>
+            
+            <!-- Contact (simple) -->
+            <li class="mobile-nav-item">
+            <a href="./Contact" class="mobile-nav-link">
+                <span><i class="fas fa-envelope"></i> Contact</span>
+            </a>
+            </li>
+            
+            <!-- About Us (simple) -->
+            <li class="mobile-nav-item">
+            <a href="./About_Me" class="mobile-nav-link">
+                <span><i class="fas fa-users"></i> About Us</span>
+            </a>
+            </li>
+            
+            <!-- Buy me a coffee -->
+            <li class="mobile-nav-item">
+            <a href="./Buy_Me_A_Coffee" class="mobile-nav-link">
+                <span><i class="fas fa-mug-hot"></i> Buy me a coffee</span>
+            </a>
+            </li>
 
+            <li class="mobile-nav-item">
+            <a href="./No_Experience_Section" class="mobile-nav-link">
+                <span><i class="fa-regular fa-circle-xmark"></i>No Experience No Problem</span>
+            </a>
+            </li>
+        </ul>
 
-          <!-- Employers dropdown (main one) -->
-          <li class="dropdown">
-            <a href="./About_Me" class="dropbtn">About Me </a>
-          </li>
+        <!-- extra links: employer, sign in, post job -->
+        <div class="mobile-extra-links">
+            <a href="#"><i class="fas fa-briefcase"></i> Settings</a>
+            <a href="./Login"><i class="fas fa-right-to-bracket"></i> Logout</a>
+        </div>
 
-          <li class="dropdown">
-            <a href="./Buy_Me_A_Coffee" class="dropbtn">Buy me a coffee</a>
-          </li>
-      </ul>
-
-      <!-- extra mobile links (employer site / sign in) -->
-      <div class="mobile-extra-links">
-        <a href="#"><i class="fas fa-briefcase"></i> Employer site</a>
-        <a href="#"><i class="fas fa-right-to-bracket"></i> Sign in</a>
-      </div>
-
-      <button class="mobile-post-btn"><i class="fas fa-plus-circle"></i> Post a job</button>
-      <div style="font-size:0.9rem; color:#3d3d3d; margin-top: 20px;">
-        <span>New to MyJobCV? </span><a href="./Signup" class="mobile-signin">Create account</a>
-      </div>
+        <button class="mobile-post-btn"><i class="fas fa-plus-circle"></i> Post a job</button>
+        <div style="font-size:0.9rem; color:#3d3d3d; margin-top: 16px; margin-bottom: 8px;">
+            <span>New to MyJobCV? </span><a href="./Signup" class="mobile-signin">Create account</a>
+        </div>
+        </div>
     </div>
-  </div>
     
     <!-- Overlay -->
     <div class="resume-overlay"></div>
