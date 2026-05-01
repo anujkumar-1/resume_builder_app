@@ -157,7 +157,9 @@ body {
     background-color: var(--light-gray);
 }
 
-/* Navbar Styles */
+/* navbar */
+
+
     * {
       margin: 0;
       padding: 0;
@@ -188,7 +190,7 @@ body {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 68px; /* indeed-like height */
+      height: 68px;
     }
 
     /* left side: logo + desktop dropdown nav */
@@ -258,7 +260,7 @@ body {
       transform: rotate(180deg);
     }
 
-    /* dropdown content */
+    /* dropdown content desktop */
     .dropdown-content {
       position: absolute;
       top: 42px;
@@ -358,13 +360,13 @@ body {
       font-size: 1rem;
       white-space: nowrap;
     }
-
+    
     .sign-in:hover {
       color: #2557a7;
       text-decoration: underline;
     }
 
-    /* ----- hamburger (hidden on desktop) ----- */
+    /* ----- hamburger (mobile only) ----- */
     .hamburger {
       display: none;
       flex-direction: column;
@@ -393,7 +395,7 @@ body {
       transition: 0.2s;
     }
 
-    /* mobile overlay + drawer */
+    /* ========== MOBILE SLIDE-IN DRAWER (FIXED: accordion submenu not independent) ========== */
     .mobile-menu-overlay {
       position: fixed;
       top: 0;
@@ -465,77 +467,127 @@ body {
       color: #000;
     }
 
-    /* accordion menu inside drawer */
-    .mobile-nav-accordion {
+    /* === ACCORDION STYLE for mobile dropdown (nested submenu appears inside slide-in) === */
+    .mobile-nav-list {
       list-style: none;
       flex: 1;
+      margin: 0;
+      padding: 0;
     }
 
-    .accordion-item {
+    .mobile-nav-item {
       margin-bottom: 8px;
       border-bottom: 1px solid #f0f1f3;
     }
 
-    .accordion-title {
-      width: 100%;
-      background: none;
-      border: none;
-      text-align: left;
-      padding: 14px 0;
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #1e1e1e;
+    /* simple link item (non-accordion) */
+    .mobile-nav-link {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      text-decoration: none;
+      padding: 14px 0;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #1e1e1e;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
       cursor: pointer;
     }
-
-    .accordion-title i {
-      color: #6f6f6f;
-      transition: transform 0.2s;
+    
+    .mobile-nav-link span {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-
-    .accordion-item.active .accordion-title i {
-      transform: rotate(90deg);
+    
+    .mobile-nav-link i:not(.chevron-icon) {
+      width: 24px;
       color: #2557a7;
     }
 
-    .accordion-content {
-      display: none;
-      padding: 4px 0 12px 8px;
+    .chevron-icon {
+      font-size: 0.8rem;
+      color: #8a8f99;
+      transition: transform 0.25s ease;
+    }
+
+    /* accordion trigger button */
+    .accordion-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 14px 0;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #1e1e1e;
+      cursor: pointer;
+      text-align: left;
+    }
+    
+    .accordion-trigger span {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .accordion-trigger i:first-child {
+      width: 24px;
+      color: #2557a7;
+    }
+
+    /* submenu (dropdown content inside drawer) */
+    .submenu-container {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background-color: #fafbfd;
+      margin-left: 32px;
+      border-radius: 12px;
+      margin-bottom: 4px;
+    }
+    
+    .mobile-nav-item.open .submenu-container {
+      max-height: 400px; /* enough to show content */
+    }
+
+    .submenu-list {
       list-style: none;
+      padding: 8px 0 12px 0;
+      margin: 0;
     }
 
-    .accordion-item.active .accordion-content {
-      display: block;
-    }
-
-    .accordion-content li a {
-      display: block;
-      padding: 10px 0 10px 16px;
+    .submenu-list li a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       text-decoration: none;
+      padding: 10px 12px;
+      font-size: 0.94rem;
       color: #3a3a3a;
-      font-size: 0.98rem;
-      border-left: 2px solid transparent;
-      transition: 0.1s;
+      border-radius: 10px;
+      transition: background 0.15s;
     }
-
-    .accordion-content li a i {
-      margin-right: 12px;
-      width: 20px;
+    
+    .submenu-list li a i {
+      width: 22px;
+      color: #2557a7;
+      font-size: 0.9rem;
+    }
+    
+    .submenu-list li a:hover {
+      background-color: #eef3fc;
       color: #2557a7;
     }
 
-    .accordion-content li a:hover {
-      border-left-color: #2557a7;
-      background-color: #f5f8fe;
-      color: #2557a7;
-    }
-
-    /* static mobile links without dropdown (if any) */
+    /* static extra links inside drawer */
     .mobile-extra-links {
-      margin-top: 16px;
+      margin-top: 20px;
       padding-top: 16px;
       border-top: 1px solid #e2e5e8;
     }
@@ -569,7 +621,12 @@ body {
       gap: 8px;
       font-size: 1rem;
       cursor: pointer;
-      margin: 24px 0 16px;
+      margin: 20px 0 12px;
+      transition: background 0.2s;
+    }
+    
+    .mobile-post-btn:hover {
+      background-color: #1a4380;
     }
 
     .mobile-signin {
@@ -578,8 +635,12 @@ body {
       text-decoration: none;
       margin-left: 8px;
     }
+    
+    .mobile-signin:hover {
+      text-decoration: underline;
+    }
 
-    /* breakpoint: switch to mobile nav */
+    /* breakpoint: hide desktop nav, show hamburger */
     @media screen and (max-width: 900px) {
       .nav-dropdowns,
       .employer-link,
@@ -597,7 +658,7 @@ body {
       }
     }
 
-    /* minor tweaks for very small */
+    /* small screens padding */
     @media screen and (max-width: 480px) {
       .navbar {
         padding: 0 12px;
@@ -632,9 +693,8 @@ body {
       border: 1px solid #eaedf0;
     }
     .demo-card h4 { color: #2557a7; margin-bottom: 6px; }
-    .footer-note { text-align: center; margin-top: 60px; color: #6f6f6f; }
+    .footer-note { text-align: center; margin-top: 60px; color: #6f6f6f; margin-bottom: 40px; }
   
-
 
 /* Overlay */
 .resume-overlay {
