@@ -1,4 +1,4 @@
-let API_URL = window.API_CONFIG?.production || "https://myjobcv.online"
+let API_URL = window.API_CONFIG?.development || "http://localhost:3000"
 // DOM elements
 const tiers = document.querySelectorAll('.tier');
 const customInput = document.getElementById('customAmount');
