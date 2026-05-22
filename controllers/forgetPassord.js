@@ -1,7 +1,6 @@
 import nodemailer from "nodemailer";
 import crypto from 'node:crypto';
-import ForgetPassword from "../models/forgetPassword.js"
-import User from "../models/user.js"
+import {ForgetPassword, User} from "../models/index.js"
 import bcrypt from "bcrypt"
 import dotenv from "dotenv"
 dotenv.config()
@@ -14,11 +13,11 @@ export const forgetPassword = async(req, res)=>{
             res.status(422).json({success: false, message: "Invalid Email Address"})
         }
         const userAlreadyExist = await User.find({ email: email });
-        if(userAlreadyExist.length==0){
+        if(!userAlreadyExist){
             res.status(404).json({success: false, message: "User not found, try again"})
         }
         const id = crypto.randomUUID();
-        const response = await ForgetPassword.insertOne({uid: id, userId: req.user.userId, isActive: true})
+        const response = await ForgetPassword.insertOne({uid: id, userId:req.user._id, isActive: true})
         
         const msg = await sendEmail(id);
         res.status(200).json({success: true, message: msg})
