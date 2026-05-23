@@ -36,11 +36,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
 
-  }
+  },
+  roleId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Role",
+  },
+
+  permissions: [
+    { type: String }
+  ],
+
 }, {
   timestamps: true
 });
 
-const User = mongoose.model('Userinfo', userSchema);
-
-export default User;
+export const User = mongoose.model('Userinfo', userSchema);
