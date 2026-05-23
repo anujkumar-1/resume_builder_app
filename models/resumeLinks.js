@@ -12,6 +12,4 @@ const resumeLinksSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const resumeLinks= mongoose.model('resumelink', resumeLinksSchema);
-
-export default resumeLinks;
+export const resumeLinks= mongoose.model('resumelink', resumeLinksSchema);
