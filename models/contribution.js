@@ -6,9 +6,14 @@ const contributionSchema = new mongoose.Schema({
     ref: 'Userinfo',
     required: true
   },
+  idempotent_key:{
+    type:String,
+    unique: true, 
+  },
   payment_status: {
     type: String,
-    default: "pending"
+    default: "pending",
+    enum: ['pending', 'success', 'failed'], 
   },
   payment_id: {
     type: String,
