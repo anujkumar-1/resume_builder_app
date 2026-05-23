@@ -38,10 +38,13 @@ const resumeSchema = new mongoose.Schema({
     projectId: String
   }],
 
+  contactInfo:{
+    name: String,
+    email: String,
+    phone: String,
+  }
 }, {
   timestamps: true
 });
 
-const Resume = mongoose.model('resumebuilder', resumeSchema);
-
-export default Resume;
+export const Resume = mongoose.model('resumebuilder', resumeSchema);
