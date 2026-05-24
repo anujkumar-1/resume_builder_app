@@ -3,6 +3,7 @@ let API_URL = window.API_CONFIG?.development || "http://localhost:3000"
 
 window.addEventListener("DOMContentLoaded", async (event) => {
     const token = localStorage.getItem("token")
+    console.log("s", token)
     if(token){
         const response = await axios.get(`${API_URL}/users/authenticate`, {headers: {Authorization: token}})
         if(response.status == 200){
@@ -156,7 +157,7 @@ window.onload = function () {
     console.log("Initializing Google Client...");
     
     google.accounts.id.initialize({
-        client_id: "705879663867-jgtd74t2fe4dn192nlvkjmetaldrd6b6.apps.googleusercontent.com",
+        client_id: "740424002226-3m82hqn7nd4bibblggeo6uoq49jsnc8u.apps.googleusercontent.com",
         callback: handleCredentialResponse
     });
 
